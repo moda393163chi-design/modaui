@@ -1,0 +1,82 @@
+{
+  "products": [
+    {
+      "id": "1",
+      "title": "「法式风骨」侧肩解构重华达呢风衣",
+      "image": "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?auto=format&fit=crop&q=80&w=600",
+      "sketch": "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?auto=format&fit=crop&q=80&w=600",
+      "desc": "大翻领披肩肩罩，一衣多穿可分拆。收紧腰侧极细皮绳时呈优雅漏斗裙摆，舒张时则是飘逸的茧型都市防守大衣。",
+      "fabric": "70% 美利奴防缩华达呢, 30% 抗静电滑糯内衬; 定制抛光双色牛角扣",
+      "price": 1299,
+      "stock": 45,
+      "status": "InStock"
+    },
+    {
+      "id": "2",
+      "title": "「智性漫步」无领斜门襟镶环保牛皮风衣",
+      "image": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=600",
+      "sketch": "https://images.unsplash.com/photo-1485462537746-965f33f7f6a7?auto=format&fit=crop&q=80&w=600",
+      "desc": "整体无领圆弧裁片，展现脖颈天鹅线。侧向极细隐形拉链闭合，并在门襟挂面饰有高品质意大利环保小羊皮。",
+      "fabric": "重磅800G美利奴海驼绒 (面料厚重温存); 意大利无铅原草鞣皮饰条",
+      "price": 1599,
+      "stock": 30,
+      "status": "InStock"
+    },
+    {
+      "id": "3",
+      "title": "「旷野行者」连帽抽绳阻光套头短风衣",
+      "image": "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=600",
+      "sketch": "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&q=80&w=600",
+      "desc": "连帽微带弧度，下摆与袖口带魔术调整扣。多向插袋设计，方便容纳日常小物件，满足高机能实用主义出行偏好。",
+      "fabric": "三防特种抗磨双面华达呢 (防强泼水, 防风, 阻撕裂); 抛光拉丝哑光五金",
+      "price": 999,
+      "stock": 60,
+      "status": "InStock"
+    },
+    {
+      "id": "4",
+      "title": "「落拓茧居」宽袖褶大轮廓双面羊毛大衣",
+      "image": "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&q=80&w=600",
+      "sketch": "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&q=80&w=600",
+      "desc": "插肩袖剪裁打破生硬感，背部伞褶在运动时营造如风流体。不设传统扣件，只配一根加宽纯羊毛厚软宽腰带。",
+      "fabric": "100% 澳大利亚进口重磅美利奴极细绵羊毛 (手工暗缝缝边)",
+      "price": 2499,
+      "stock": 25,
+      "status": "InStock"
+    }
+  ],
+  "campaigns": [
+    {
+      "id": "cam_1",
+      "name": "2026年AW秋冬首发推广案",
+      "type": "小红书KOL种草",
+      "budget": 12000,
+      "roi": 4.85,
+      "clicks": 18450,
+      "conversions": 920,
+      "status": "推广中"
+    },
+    {
+      "id": "cam_2",
+      "name": "618年中重磅大促预热活动",
+      "type": "抖音直播憋单+直通车投放",
+      "budget": 35000,
+      "roi": 6.2,
+      "clicks": 54200,
+      "conversions": 3360,
+      "status": "筹备中"
+    }
+  ],
+  "orders": [
+    { "id": "ORD001", "customer": "张敏 (北京市)", "product": "「法式风骨」侧肩解构重华达呢风衣", "size": "M", "amount": 1299, "date": "2026-05-18", "status": "妥投" },
+    { "id": "ORD002", "customer": "王淑芳 (上海市)", "product": "「智性漫步」无领斜门襟风衣", "size": "S", "amount": 1599, "date": "2026-05-20", "status": "妥投" },
+    { "id": "ORD003", "customer": "Chloe Chen (成都市)", "product": "「落拓茧居」宽袖褶双面羊毛大衣", "size": "L", "amount": 2499, "date": "2026-05-22", "status": "妥投" },
+    { "id": "ORD004", "customer": "李娜 (杭州市)", "product": "「法式风骨」侧肩解构重华达呢风衣", "size": "S", "amount": 1299, "date": "2026-05-24", "status": "配送中" },
+    { "id": "ORD005", "customer": "杨茜 (深圳市)", "product": "「旷野行者」连帽抽绳短风衣", "size": "M", "amount": 999, "date": "2026-05-25", "status": "已出库" },
+    { "id": "ORD006", "customer": "赵敏 (武汉市)", "product": "「智性漫步」无领斜门襟风衣", "size": "M", "amount": 1599, "date": "2026-05-26", "status": "妥投" },
+    { "id": "ORD007", "customer": "周薇 (南京市)", "product": "「落拓茧居」宽袖褶双面羊毛大衣", "size": "M", "amount": 2499, "date": "2026-05-27", "status": "付款成功" },
+    { "id": "ORD008", "customer": "林舒涵 (厦门市)", "product": "「法式风骨」侧肩解构重华达呢风衣", "size": "L", "amount": 1299, "date": "2026-05-28", "status": "妥投" },
+    { "id": "ORD009", "customer": "杜秋月 (西安市)", "product": "「旷野行者」连帽抽绳短风衣", "size": "S", "amount": 999, "date": "2026-05-29", "status": "配送中" },
+    { "id": "ORD010", "customer": "麦斯·玛拉 (广州市)", "product": "「落拓茧居」宽袖褶双面羊毛大衣", "size": "S", "amount": 2499, "date": "2026-05-30", "status": "已出库" }
+  ]
+}

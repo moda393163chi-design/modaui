@@ -1,0 +1,6 @@
+{
+  "name": "MODAUI",
+  "description": "An AI-powered ecommerce and operations platform for creating and running an autonomous business with digital employees.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

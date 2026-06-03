@@ -1,0 +1,80 @@
+{
+  "entities": {
+    "Product": {
+      "title": "Product SPU",
+      "description": "Information about a product SPU in the inventory",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "price": { "type": "number" },
+        "stock": { "type": "number" },
+        "image": { "type": "string" },
+        "category": { "type": "string" },
+        "desc": { "type": "string" },
+        "sales": { "type": "number" },
+        "rating": { "type": "string" }
+      },
+      "required": ["id", "name", "price", "stock", "image", "category"]
+    },
+    "Order": {
+      "title": "Customer Order",
+      "description": "Details about a takeout or dine-in customer order",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "time": { "type": "string" },
+        "location": { "type": "string" },
+        "desc": { "type": "string" },
+        "price": { "type": "number" },
+        "status": { "type": "string" },
+        "type": { "type": "string" },
+        "customerName": { "type": "string" },
+        "phone": { "type": "string" },
+        "tracking": { "type": "string" }
+      },
+      "required": ["id", "desc", "price", "status", "type", "customerName", "phone"]
+    },
+    "MerchantMetrics": {
+      "title": "Merchant Metrics",
+      "description": "Real-time consolidated business metrics shown on the workbench",
+      "type": "object",
+      "properties": {
+        "sales": { "type": "number" },
+        "orders": { "type": "number" }
+      },
+      "required": ["sales", "orders"]
+    },
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Enterprise founder profile metadata generated on sign-up",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "role": { "type": "string" }
+      },
+      "required": ["uid", "email"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Enterprise founder profiles synchronized with Auth credentials"
+    },
+    "/products/{productId}": {
+      "schema": "Product",
+      "description": "List of products on sale"
+    },
+    "/orders/{orderId}": {
+      "schema": "Order",
+      "description": "List of customer orders"
+    },
+    "/metrics/operating": {
+      "schema": "MerchantMetrics",
+      "description": "Consolidated live financial metrics"
+    }
+  }
+}

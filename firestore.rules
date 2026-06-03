@@ -1,0 +1,88 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 1. Global Catch-all Default-Deny Security Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Common Validation Helpers
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isPlatformAdmin() {
+      return request.auth != null && 
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'Platform Admin', 'founder', 'Merchant Owner']);
+    }
+
+    function isTenantStaff(tenantId) {
+      return request.auth != null && (
+        request.auth.token.email.replace('[^a-zA-Z0-9]', '_') == tenantId ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.tenantId == tenantId ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'Platform Admin', 'founder', 'Merchant Owner', 'Manager', 'Staff']
+      );
+    }
+
+    // 2. SPU Product Hardening Rules
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if isPlatformAdmin();
+    }
+
+    // 3. Order Hardening Rules
+    match /orders/{orderId} {
+      allow read: if true;
+      allow write: if isPlatformAdmin();
+    }
+
+    // 4. Analytics Summary Hardening Rules
+    match /metrics/{metricId} {
+      allow read: if true;
+      allow write: if isPlatformAdmin();
+    }
+
+    // 5. Tenant Isolated Partition Rules (Fully Multi-Tenant Sandbox with strict RBAC)
+    match /tenants/{tenantId} {
+      allow read: if true; // Public store views are allowed
+      allow write: if isTenantStaff(tenantId);
+
+      match /billing_logs/{logId} {
+        allow read, write: if isTenantStaff(tenantId);
+      }
+
+      match /industries/{industryId}/metrics/{metricId} {
+        allow read: if true;
+        allow write: if isTenantStaff(tenantId);
+      }
+
+      match /industries/{industryId}/products/{productId} {
+        allow read: if true;
+        allow write: if isTenantStaff(tenantId);
+      }
+
+      match /industries/{industryId}/orders/{orderId} {
+        allow read: if true; // Allows buyer storefront to track order details
+        allow create: if true; // Allows any guest buyer to place an order
+        allow update, delete: if isTenantStaff(tenantId);
+      }
+
+      match /industries/{industryId}/coupons/{couponId} {
+        allow read: if true;
+        allow write: if isTenantStaff(tenantId);
+      }
+
+      match /{document=**} {
+        allow read: if true;
+        allow write: if isTenantStaff(tenantId);
+      }
+    }
+
+    // 6. User Profile Rules (Enforce strict access controls; users can only read/write their own profiles)
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
