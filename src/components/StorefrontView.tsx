@@ -21,6 +21,19 @@ interface StorefrontViewProps {
   onAddLog?: (sender: string, emoji: string, message: string, type: 'info' | 'success' | 'warn') => void;
 }
 
+const getIndustryDefaultHeadline = (indId: string) => {
+  const defaults: Record<string, string> = {
+    fashion: '👗 Aria 季风高定系列 · 舒感美学新风尚',
+    catering: '☕ Tyson Cafe · 经典美式/手作拿铁特惠',
+    retail: '✈️ 全球尖货精选直邮 · 发现品质生活好物',
+    beauty: '💄 Coco Salon · 焕活平衡 SPA 与定制深层理疗',
+    fitness: '🏋️ Kelly Gym · 尊享周度私教定制与低碳膳食',
+    jewelry: '💎 18K足金古法拉丝龙凤金镯 · 匠人高定传承',
+    home: '🛋️ 空间美学 · 环保级棉麻主卧全套风格软装'
+  };
+  return defaults[indId] || defaults.catering;
+};
+
 export default function StorefrontView({ tenantId, industryId, onAddLog }: StorefrontViewProps) {
   // Preconfigured visual themes in strict monochrome / high-contrast premium aesthetics
   const themesList: VisualTheme[] = [
@@ -33,7 +46,7 @@ export default function StorefrontView({ tenantId, industryId, onAddLog }: Store
 
   // Core settings synchronized with Firestore
   const [selectedThemeId, setSelectedThemeId] = useState<'classic' | 'dark' | 'retro' | 'royal' | 'indigo'>('classic');
-  const [storeHeadline, setStoreHeadline] = useState(industryId === 'catering' ? '🧁 Tyson Cafe · 经典手作美式配切片咖啡' : '👗 摩登复古·100%全呼吸亚麻大秀系列发布');
+  const [storeHeadline, setStoreHeadline] = useState(getIndustryDefaultHeadline(industryId));
   const [phoneContact, setPhoneContact] = useState('400-820-8820');
   const [deliveryType, setDeliveryType] = useState<'takeout' | 'delivery' | 'dine_in'>('delivery');
   const [logoImage, setLogoImage] = useState('💫');

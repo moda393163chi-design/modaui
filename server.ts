@@ -977,6 +977,53 @@ async function startServer() {
         return;
       }
 
+      // Robust simulation fallback when credentials are empty
+      if (!process.env.WECHAT_API_KEY || !process.env.WECHAT_APP_ID || !process.env.WECHAT_MCH_ID) {
+        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://modaui.com/pay-simulation?orderId=${orderId}%26amount=${amount}`;
+        
+        // Auto convert order status to processing after 4 seconds to simulate user scanning on callback
+        setTimeout(() => {
+          const db = ModaDB.read();
+          const order = db.orders.find(o => o.id === orderId);
+          if (order && order.status === 'pending') {
+            order.status = 'processing';
+            order.shipmentTracking = { 
+              carrier: 'WeChatPay_Simulated', 
+              trackingNumber: `WX-${Math.floor(10000000 + Math.random() * 90000000)}`, 
+              status: '模拟微信扫码支付对账成功，大货统筹中' 
+            };
+            db.payments.push({
+              id: `pay_${Math.random().toString(36).slice(2, 11)}`,
+              orderId,
+              amount: Number(amount),
+              method: 'WeChatPay',
+              status: 'succeeded',
+              transactionId: `WXSim-${Math.random().toString(36).slice(2, 10).toUpperCase()}`,
+              createdAt: new Date().toISOString()
+            });
+            db.finance.push({
+              id: `FIN-${Math.floor(100000 + Math.random() * 900000)}`,
+              merchantId: order.merchantId || 'default_tenant',
+              type: 'revenue',
+              amount: Number(amount),
+              orderId,
+              description: `微信移动扫码汇率结算完成：${orderId}`,
+              timestamp: new Date().toISOString()
+            });
+            ModaDB.write(db);
+            console.log(`[WeChat Pay Simulated Callback] Order ${orderId} reconciled successfully via background thread!`);
+          }
+        }, 4000);
+
+        res.json({ 
+          success: true, 
+          qrCode: qrUrl, 
+          prepayId: `prepay_sim_${Math.random().toString(36).slice(2, 10)}`, 
+          mode: 'simulation' 
+        });
+        return;
+      }
+
       const wechatPayment = new Payment({
         partnerKey: process.env.WECHAT_API_KEY || "",
         appId: process.env.WECHAT_APP_ID || "",

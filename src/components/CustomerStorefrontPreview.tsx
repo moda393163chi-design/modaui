@@ -22,44 +22,185 @@ interface Product {
   };
 }
 
-// 24-hour support agent mappings depending on active industryId parameter
-const getSupportAgent = (indId: string) => {
-  const agents: Record<string, { name: string; emoji: string; desc: string; welcome: string }> = {
-    fashion: { name: 'Claire', emoji: '💬', desc: 'AI 经典穿搭服饰客服主管', welcome: '您好！我是 Claire，您的 24 小时 AI 穿搭与服饰顾问。尺码不合、现货配发、潮流搭配，随时问我哦！👗' },
-    catering: { name: 'Mia', emoji: '📞', desc: 'AI 餐饮外卖关怀客服主管', welcome: '您好！我是 Mia，欢迎光临美食小站！对我们的招牌推荐、特惠神券或者送达时效有什么疑问吗？立即帮您解答！🍛' },
-    retail: { name: 'Holly', emoji: '🗣️', desc: 'AI 跨境好物客服主管', welcome: 'Hello！我是 Holly，生活百货采购及物流管家。货运发运详情、多规格对账、质保保真，均可一秒解答！✈️' },
-    beauty: { name: 'Coco', emoji: '💁‍♀️', desc: 'AI 美容私域特惠客服主管', welcome: '欢迎来到佳人沙龙！我是 Coco，对我们的预约变更、私域团购特卡或面膜红肿客诉有什么想了解的吗？💄' },
-    fitness: { name: 'Kelly', emoji: '👟', desc: 'AI 健身低碳塑形客服主管', welcome: 'Hey！我是 Kelly，您的健身课程与轻食配餐顾问。需要请假延期、调整课表或是营养餐谱吗？立即帮您排好！🏋️' },
-    jewelry: { name: 'Joy', emoji: '🤵', desc: 'AI 高端奢品保真客服主管', welcome: '尊贵的贵宾您好，我是 Joy，您的专属珠宝保真礼宾。我可以为您解答一证一质检证书、实时金价变动、顺丰专机高保价包邮等细节。💎' },
-    home: { name: 'Holly', emoji: '📐', desc: 'AI 空间美学软装客服主管', welcome: '您好！我是 Holly，负责您的重货美学托运与空间软装排单。需要查询专线大件上楼服务或零配件寄发，由我快速受理！🛋️' }
+const getIndustryDefaults = (indId: string) => {
+  const defaults: Record<string, {
+    company: string;
+    headline: string;
+    theme: 'retro' | 'dark' | 'classic';
+    products: Product[];
+    welcome: string;
+    recommendation: string;
+    agentName: string;
+    agentDesc: string;
+    agentEmoji: string;
+  }> = {
+    fashion: {
+      company: 'Aria Fashion Studio',
+      headline: '👗 Aria 季风高定系列 · 舒感美学新风尚',
+      theme: 'classic',
+      welcome: '您好！我是 Claire，您的 24 小时 AI 穿搭与服饰顾问。尺码不合、现货配发、潮流搭配，随时问我哦！👗',
+      recommendation: 'Aria 精选季风穿搭新款碎花长裙搭配流苏开衫外套',
+      agentName: 'Claire',
+      agentDesc: 'AI 经典穿搭服饰客服主管',
+      agentEmoji: '💬',
+      products: [
+        { id: 'f1', name: '季风碎花垂坠长裙', price: 399, stock: 45, image: '👗', category: '女装', desc: '经典优雅，高腰版型，展现浪漫法式度假感，纯真丝爽滑内里。', sales: 412, rating: '99%', specs: { sizes: ['S码', 'M码', 'L码'], labels: '标准版/加长版' } },
+        { id: 'f2', name: '舒感全棉针织吊带', price: 129, stock: 120, image: '👚', category: '女装', desc: '100%有机长绒棉，贴身舒适回弹，不易起球，多色百搭。', sales: 1240, rating: '98%', specs: { sizes: ['均码 / 白色', '均码 / 灰色', '均码 / 黑色'], labels: '修身版/宽松版' } },
+        { id: 'f3', name: '桑蚕丝缎面修身西装', price: 899, stock: 30, image: '🧥', category: '外套', desc: '精选桑蚕丝混纺挺阔面料，手感高级莹润，利落剪裁。', sales: 98, rating: '97%', specs: { sizes: ['S码', 'M码', 'L码'], labels: '修身一粒扣' } },
+        { id: 'f4', name: '收腹塑形高腰瑜伽裤', price: 199, stock: 85, image: '👖', category: '运动', desc: '双重高密弹力空气层，裸感雕琢腰腹线条，轻凉防震。', sales: 310, rating: '96%', specs: { sizes: ['S码', 'M码', 'L码', 'XL码'], labels: '高腰提臀版' } }
+      ]
+    },
+    catering: {
+      company: 'Tyson Cafe',
+      headline: '☕ Tyson Cafe · 经典美式/手作拿铁特惠',
+      theme: 'retro',
+      welcome: '您好！我是 Mia，欢迎光临美食小站！对我们的招牌推荐、特惠神券或者送达时效有什么疑问吗？立即帮您解答！🍛',
+      recommendation: 'Mia 臻选深烘椰香拿铁配手工熔岩黑森林慕斯',
+      agentName: 'Mia',
+      agentDesc: 'AI 餐饮外卖关怀客服主管',
+      agentEmoji: '📞',
+      products: [
+        { id: 'p1', name: '冰美式', price: 18, stock: 120, image: '🥤', category: '咖啡', desc: '清爽顺滑，经典之选，100%阿拉比卡咖啡豆。', sales: 1234, rating: '98%', specs: { sizes: ['中杯 ¥18', '大杯 ¥22'], labels: '标准/少冰' } },
+        { id: 'p2', name: '拿铁咖啡', price: 28, stock: 85, image: '☕', category: '咖啡', desc: '经典比例，奶香浓郁，自然甘甜，丝滑口感。', sales: 889, rating: '97%', specs: { sizes: ['中杯 ¥28', '大杯 ¥32'], labels: '标准/多奶' } },
+        { id: 'p3', name: '生椰拿铁', price: 28, stock: 140, image: '🥥', category: '咖啡', desc: '椰香浓郁，口感顺滑，香甜醇厚，一口惊艳。', sales: 1109, rating: '99%', specs: { sizes: ['中杯 ¥28', '大杯 ¥32'], labels: '推荐冰饮' } },
+        { id: 'p6', name: '提拉米苏', price: 26, stock: 40, image: '🍰', category: '甜品', desc: '意式经典重现，马斯卡彭慕斯搭配咖啡酒味，回味悠长。', sales: 310, rating: '96%', specs: { sizes: ['标准切片'], labels: '配热咖啡' } }
+      ]
+    },
+    retail: {
+      company: 'Moda Global Direct',
+      headline: '✈️ 全球尖货精选直邮 · 发现品质生活好物',
+      theme: 'classic',
+      welcome: 'Hello！我是 Holly，生活百货采购及物流管家。货运发运详情、多规格对账、质保保真，均可一秒解答！✈️',
+      recommendation: 'Holly 甄选便携式高强度真空保温杯与极速空气炸锅组',
+      agentName: 'Holly',
+      agentDesc: 'AI 跨境好物客服主管',
+      agentEmoji: '🗣️',
+      products: [
+        { id: 'r1', name: '真空不锈钢保温杯', price: 129, stock: 88, image: '🥛', category: '餐具', desc: '镜面抽真空高规不锈钢，超强保冷防漏，24小时保温。', sales: 620, rating: '98%', specs: { sizes: ['350ml', '500ml'], labels: '曜石黑/皓月白' } },
+        { id: 'r2', name: '智能防粘空气炸锅', price: 388, stock: 40, image: '🍳', category: '电器', desc: '360°热风循环极速脆化，免除繁多油脂，不粘易拆洗。', sales: 315, rating: '99%', specs: { sizes: ['4.5L 经典款', '6L 尊享家庭款'], labels: '一键智能屏' } },
+        { id: 'r3', name: '按摩气垫发梳', price: 89, stock: 110, image: '🪮', category: '个护', desc: '活性透气气垫，防止拉拉掉发，轻按头部穴位酥爽体验。', sales: 124, rating: '95%', specs: { sizes: ['气囊按摩款', '防静电木齿款'], labels: '天然原木柄' } },
+        { id: 'r4', name: '无叶降温挂脖风扇', price: 59, stock: 150, image: '🌀', category: '百货', desc: '双侧强力直流电机不吹发，全时柔风，环抱式清凉。', sales: 450, rating: '97%', specs: { sizes: ['标准款', '10小时长续航款'], labels: '风道防缠发' } }
+      ]
+    },
+    beauty: {
+      company: 'Coco Beauty Salon',
+      headline: '💄 Coco Salon · 焕活平衡 SPA 与定制深层理疗',
+      theme: 'classic',
+      welcome: '欢迎来到佳人沙龙！我是 Coco，对我们的预约变更、私域团购特卡或面膜红肿客诉有什么想了解的吗？💄',
+      recommendation: 'Coco 极力特推焕活平衡 SPA 专属紧致精油深层疗程',
+      agentName: 'Coco',
+      agentDesc: 'AI 美容私域特惠客服主管',
+      agentEmoji: '💁‍♀️',
+      products: [
+        { id: 'b1', name: '焕活全身精油SPA', price: 398, stock: 20, image: '🧴', category: 'SPA', desc: '独家精油按摩调理，通调身心气血，驱除肌肉深度僵硬。', sales: 88, rating: '99%', specs: { sizes: ['单人/60分钟', '单人/90分钟尊享'], labels: '到店即享/提供简餐' } },
+        { id: 'b2', name: '无痕睫毛嫁接', price: 168, stock: 45, image: '👁️', category: '美睫', desc: '进口材质无重力重叠嫁接，防过敏不流泪，持久卷挺。', sales: 240, rating: '97%', specs: { sizes: ['自然款/120根', '浓密芭比款/不限根数'], labels: '专业技师一对一' } },
+        { id: 'b3', name: '修护胶原蛋白面膜组', price: 258, stock: 75, image: '💆‍♀️', category: '护肤', desc: '冷敷多肽原液深层吸收，针对换季脱皮泛红极速赋活。', sales: 185, rating: '98%', specs: { sizes: ['5片疗程体验装', '15片密集修复囤货装'], labels: '敏感肌可用' } },
+        { id: 'b4', name: '头道舒压毛囊净化养护', price: 128, stock: 50, image: '🧼', category: '沙龙', desc: '控油研磨净化颗粒，深层舒缓长期偏头痛与紧张脑沉。', sales: 310, rating: '96%', specs: { sizes: ['标准体验/40分钟'], labels: '附赠肩颈推拿' } }
+      ]
+    },
+    fitness: {
+      company: 'Kelly Fitness Center',
+      headline: '🏋️ Kelly Gym · 尊享周度私教定制与低碳膳食',
+      theme: 'dark',
+      welcome: 'Hey！我是 Kelly，您的健身课程与轻食配餐顾问。需要请假延期、调整课表或是营养餐谱吗？立即帮您排好！🏋️',
+      recommendation: 'Kelly 专配高蛋白减脂沙拉组合与周度打卡尊享私家特训',
+      agentName: 'Kelly',
+      agentDesc: 'AI 健身低碳塑形客服主管',
+      agentEmoji: '👟',
+      products: [
+        { id: 't1', name: '全身力量雕刻一对一课', price: 265, stock: 35, image: '🏋️', category: '私教', desc: '一对一量身定制动作，激活深层肌群，高效燃脂防震。', sales: 110, rating: '100%', specs: { sizes: ['单节1对1私教课', '10节体能蜕变预售卡'], labels: '国家认证教练授课' } },
+        { id: 't2', name: '控卡蛋白纤虾沙拉餐', price: 45, stock: 80, image: '🥗', category: '轻食', desc: '新鲜水熟基围虾配牛油果、羽衣甘蓝，满足增肌需求。', sales: 350, rating: '98%', specs: { sizes: ['标准单人份', '双倍虾仁减脂套餐'], labels: '下单现做30分达' } },
+        { id: 't3', name: '防震高弹速干运动背心', price: 178, stock: 65, image: '👚', category: '装备', desc: '吸湿排汗四面弹，防止剧烈震晃，美背肩带舒爽。', sales: 125, rating: '97%', specs: { sizes: ['S码', 'M码', 'L码'], labels: '经典雾霾蓝/高冷雅黑' } },
+        { id: 't4', name: '防滑降噪回弹瑜伽发汗垫', price: 128, stock: 90, image: '🧘', category: '装备', desc: '加宽加厚TPE复合防裂，双面锁滑减震，全向呵护膝肘。', sales: 240, rating: '96%', specs: { sizes: ['183cm宽屏标准版', '185cm加厚资深款'], labels: '赠送原装绑带+背袋' } }
+      ]
+    },
+    jewelry: {
+      company: 'Joy High Jewelry',
+      headline: '💎 18K足金古法拉丝龙凤金镯 · 匠人高定传承',
+      theme: 'retro',
+      welcome: '尊贵的贵宾您好，我是 Joy，您的专属珠宝保真礼宾。我可以为您解答一证一质检证书、实时金价变动、顺丰专机高保价包邮等细节。💎',
+      recommendation: 'Joy 鉴选足金古法拉丝龙凤金镯一证一码质检护航套',
+      agentName: 'Joy',
+      agentDesc: 'AI 高端奢品保真客服主管',
+      agentEmoji: '🤵',
+      products: [
+        { id: 'j1', name: '传承古法手工拉丝龙凤金手镯', price: 5900, stock: 15, image: '💍', category: '古法金奢', desc: '足金重器，古法哑光拉丝工艺，纯工匠龙凤浮雕，富贵典雅。', sales: 24, rating: '100%', specs: { sizes: ['18克贵妃轻盈款', '24克高定祥瑞宽版'], labels: '带国家质检证一证一码' } },
+        { id: 'j2', name: '温润和田白玉平安吊坠', price: 1880, stock: 25, image: '📿', category: '和田白玉', desc: '精挑高白油亮和田玉，手工双面俏雕，玉质细腻莹润温和。', sales: 48, rating: '99%', specs: { sizes: ['精磨水滴款', '圆融平安扣型'], labels: '附赠手工红绳包装盒' } },
+        { id: 'j3', name: '公主六爪钻戒', price: 12900, stock: 8, image: '💎', category: '钻戒誓约', desc: '璀璨八心八箭切面，极致无暇切工，GIA身份保真承诺。', sales: 12, rating: '100%', specs: { sizes: ['30分精品日常款', '50分璀璨求婚星光款'], labels: '一证一码' } },
+        { id: 'j4', name: '天然极光Akoya海水珍珠耳环', price: 3600, stock: 20, image: '👂', category: '耳饰高定', desc: '金属质感强偏红极光，18K金耳轮佩戴极为典雅，尊显气场。', sales: 75, rating: '98%', specs: { sizes: ['7mm 精品一对', '8.5mm 豪奢一对'], labels: '无暇镜面极光' } }
+      ]
+    },
+    home: {
+      company: 'Holly Home Aesthetics',
+      headline: '🛋️ 空间美学 · 环保级棉麻主卧全套风格软装',
+      theme: 'classic',
+      welcome: '您好！我是 Holly，负责您的重货美学托运与空间软装排单。需要查询专线大件上楼服务或零配件寄发，由我快速受理！🛋️',
+      recommendation: 'Holly 精配现代极简环保级棉麻主卧全套风格整体软装',
+      agentName: 'Holly',
+      agentDesc: 'AI 空间美学软装客服主管',
+      agentEmoji: '📐',
+      products: [
+        { id: 'h1', name: '高回弹太空棉科技科技布沙发', price: 3800, stock: 12, image: '🛋️', category: '家具', desc: '高回弹多段托护，特种布防水防污耐磨防爪，质感轻奢。', sales: 30, rating: '99%', specs: { sizes: ['双人舒适 1.8米', '三人宽奢 2.4米'], labels: '极速大件直配上楼安装' } },
+        { id: 'h2', name: '北美橡木实木直条桌餐椅', price: 1200, stock: 18, image: '🪑', category: '家具', desc: '精选白橡木防霉，无棱角防撞，清漆环保无味。', sales: 55, rating: '98%', specs: { sizes: ['一桌四椅基础组合', '一桌六椅升级套系'], labels: '资深师傅上门免费安装' } },
+        { id: 'h3', name: '无甲醛加厚隔绝遮光高克重窗帘', price: 680, stock: 40, image: '🪵', category: '软装', desc: '高密度隔热物理降噪，挂纱免熨，无挥发甲醛，安全抗静电。', sales: 110, rating: '97%', specs: { sizes: ['高2.7米 窗宽3米/挂钩款', '高2.7米 窗宽4米/打孔款'], labels: '免加工辅料费' } },
+        { id: 'h4', name: '仿生记忆慢弯释压颈椎枕', price: 249, stock: 85, image: '🛏️', category: '寝具', desc: '科学人体曲面护颈，平躺侧卧一秒护椎，深层安享舒适熟睡。', sales: 410, rating: '98%', specs: { sizes: ['慢回弹舒睡经典一个', '家庭专享实惠两只装'], labels: 'A类亲肤防螨枕套' } }
+      ]
+    }
   };
-  return agents[indId] || agents.catering;
+  return defaults[indId] || defaults.catering;
+};
+
+const getSupportAgent = (indId: string) => {
+  const def = getIndustryDefaults(indId);
+  return { name: def.agentName, emoji: def.agentEmoji, desc: def.agentDesc, welcome: def.welcome };
 };
 
 const getIndustryRecommendation = (indId: string) => {
-  const recommendations: Record<string, string> = {
-    fashion: "Aria 精选季风穿搭新款碎花长裙搭配流苏开衫外套",
-    catering: "Mia 臻选深烘椰香拿铁配手工熔岩黑森林慕斯",
-    retail: "Holly 甄选便携式高强度真空保温杯与极速空气炸锅组",
-    beauty: "Coco 极力特推焕活平衡 SPA 专属紧致精油深层疗程",
-    fitness: "Kelly 专配高蛋白减脂沙拉组合与周度打卡尊享私家特训",
-    jewelry: "Joy 鉴选足金古法拉丝龙凤金镯一证一码质检护航套",
-    home: "Holly 精配现代极简环保级棉麻主卧全套风格整体软装"
+  return getIndustryDefaults(indId).recommendation;
+};
+
+const getSpecsForProduct = (product: Product, indId: string): string[] => {
+  if (product.specs?.sizes && product.specs.sizes.length > 0) {
+    return product.specs.sizes;
+  }
+  const defaultSpecs = getIndustryDefaults(indId).products.find(p => p.id === product.id)?.specs?.sizes;
+  if (defaultSpecs) return defaultSpecs;
+  
+  const specFallback: Record<string, string[]> = {
+    fashion: ['S码 / 黑色', 'M码 / 黑色', 'M码 / 白色', 'L码 / 白色'],
+    catering: ['中杯 / 常温', '中杯 / 少冰', '大杯 / 热饮', '大杯 / 少冰'],
+    retail: ['标准款 / 曜石黑', '升级款 / 曜石黑', '标准款 / 皓月白', '五包超值共享装'],
+    beauty: ['单人体验 / 立即到店', '标准套餐 / 精细重构', '双人尊享 / 专属技师', '五次周期卡 / 极力推荐'],
+    fitness: ['单次卡 / 指定教练', '单次卡 / 全时通用', '五次训练卡 / 低碳高能', '十次卡 / 全馆通用'],
+    jewelry: ['18克 / 手工款', '24克 / 精制款', '典雅定制款(18K金)', '奢华满钻款(包邮)'],
+    home: ['标准规格 / 原木色', '标准规格 / 仿白色', '双人加宽 / 亚麻灰', '全套精装 / 包搬运上楼']
   };
-  return recommendations[indId] || recommendations.catering;
+  return specFallback[indId] || specFallback.catering;
+};
+
+// Safe localStorage sync reader
+const getLocalValue = (key: string, fallback: string) => {
+  try {
+    return localStorage.getItem(key) || fallback;
+  } catch (e) {
+    return fallback;
+  }
 };
 
 export default function CustomerStorefrontPreview() {
-  const [theme, setTheme] = useState<'retro' | 'dark' | 'classic'>('retro');
-  const [headline, setHeadline] = useState('☕ Tyson Cafe · 经典美式/手作拿铁特惠');
-  const [company, setCompany] = useState('Tyson Cafe');
-  const [industryId, setIndustryId] = useState('catering');
+  const localIndId = getLocalValue('preview_industry_id', 'catering');
+  const defaults = getIndustryDefaults(localIndId);
+
+  const [industryId, setIndustryId] = useState(localIndId);
+  const [theme, setTheme] = useState<'retro' | 'dark' | 'classic'>(getLocalValue('preview_theme', defaults.theme) as any);
+  const [headline, setHeadline] = useState(getLocalValue('preview_headline', defaults.headline));
+  const [company, setCompany] = useState(getLocalValue('preview_company', defaults.company));
   const [products, setProducts] = useState<Product[]>([]);
   const [customerCart, setCustomerCart] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<'home' | 'menu' | 'cart' | 'success'>('home');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [couponApplied, setCouponApplied] = useState(true);
-  const [selectedSpecs, setSelectedSpecs] = useState<string>('中杯/标准温度');
+  const [selectedSpecs, setSelectedSpecs] = useState<string>('');
   const [orderSubmitted, setOrderSubmitted] = useState(false);
   const [deliveryAddress, setDeliveryAddress] = useState('朝阳区望京SOHO 2单元1102');
   const [orderType, setOrderType] = useState<'takeout' | 'dine_in'>('takeout');
@@ -179,13 +320,9 @@ export default function CustomerStorefrontPreview() {
           console.error(e);
         }
       } else {
-        // Fallback default mock products matching catering
-        setProducts([
-          { id: 'p1', name: '冰美式', price: 18, stock: 120, image: '🥤', category: '咖啡', desc: '清爽顺滑，经典之选，100%阿拉比卡咖啡豆。', sales: 1234, rating: '98%', specs: { sizes: ['中杯 ¥18', '大杯 ¥22'], labels: '标准/少冰' } },
-          { id: 'p2', name: '拿铁咖啡', price: 28, stock: 85, image: '☕', category: '咖啡', desc: '经典比例，奶香浓郁，自然甘甜，丝滑口感。', sales: 889, rating: '97%' },
-          { id: 'p3', name: '生椰拿铁', price: 28, stock: 140, image: '🥥', category: '咖啡', desc: '椰香浓郁，口感顺滑，香甜醇厚，一口惊艳。', sales: 1109, rating: '99%' },
-          { id: 'p6', name: '提拉米苏', price: 26, stock: 40, image: '🍰', category: '甜品', desc: '意式经典重现，马斯卡彭慕斯搭配咖啡酒味，回味悠长。', sales: 310, rating: '96%' }
-        ]);
+        // Fallback default mock products matching selected industry instead of catering hardcode!
+        const indDefaults = getIndustryDefaults(localIndustryId);
+        setProducts(indDefaults.products);
       }
     }, (error) => {
       console.warn("Real-time preview product load fallback: ", error);
@@ -195,6 +332,9 @@ export default function CustomerStorefrontPreview() {
         } catch (e) {
           console.error(e);
         }
+      } else {
+        const indDefaults = getIndustryDefaults(localIndustryId);
+        setProducts(indDefaults.products);
       }
     });
 
@@ -246,7 +386,7 @@ export default function CustomerStorefrontPreview() {
 
   // Add to cart helper
   const addToCart = (product: Product, selectedOptions?: string) => {
-    const sizeStr = selectedOptions || '中杯/标准规格';
+    const sizeStr = selectedOptions || getSpecsForProduct(product, industryId)[0] || '标准规格';
     const existing = customerCart.find(it => it.id === product.id && it.specs === sizeStr);
     
     if (existing) {
@@ -661,7 +801,7 @@ export default function CustomerStorefrontPreview() {
                           {(filteredProducts.length > 0 ? filteredProducts : products).slice(0, 2).map(p => (
                             <div 
                               key={p.id} 
-                              onClick={() => setSelectedProduct(p)}
+                              onClick={() => { setSelectedProduct(p); setSelectedSpecs(getSpecsForProduct(p, industryId)[0] || '标准规格'); }}
                               className={`p-2 rounded-lg border cursor-pointer hover:border-sky-500 transition-all ${currentStyle.accentBg} ${currentStyle.accentBorder}`}
                             >
                               <div className="text-2xl text-center pb-1">{p.image}</div>
@@ -716,7 +856,7 @@ export default function CustomerStorefrontPreview() {
                           filteredProducts.map(p => (
                             <div 
                               key={p.id} 
-                              onClick={() => setSelectedProduct(p)}
+                              onClick={() => { setSelectedProduct(p); setSelectedSpecs(getSpecsForProduct(p, industryId)[0] || '标准规格'); }}
                               className={`p-2 rounded-lg border flex items-center justify-between cursor-pointer hover:border-sky-500 transition-all ${currentStyle.accentBg} ${currentStyle.accentBorder}`}
                             >
                               <div className="flex items-center space-x-2 truncate">
@@ -1238,13 +1378,13 @@ export default function CustomerStorefrontPreview() {
             <p className="text-[8.5px] text-zinc-400 leading-normal">{selectedProduct.desc}</p>
             
             <div className="space-y-1.5">
-              <span className="text-[8.5px] font-bold text-zinc-450 block uppercase">🌡️ 规格与加料</span>
+              <span className="text-[8.5px] font-bold text-zinc-450 block uppercase">🌡️ 选择规格</span>
               <div className="grid grid-cols-2 gap-1.5 text-center font-bold text-[8.5px]">
-                {['中杯/常温', '中杯/少冰', '大杯/热饮', '大杯/少冰'].map((opt) => (
+                {getSpecsForProduct(selectedProduct, industryId).map((opt) => (
                   <button 
                     key={opt}
                     onClick={() => setSelectedSpecs(opt)}
-                    className={`py-1 rounded border text-[8px] truncate transition-all duration-100 ${
+                    className={`py-1.5 px-1 rounded border text-[8px] truncate transition-all duration-100 ${
                       selectedSpecs === opt ? 'bg-emerald-600/10 text-sky-400 border-sky-500' : 'bg-transparent text-zinc-400 border-zinc-800 hover:border-zinc-700'
                     }`}
                   >

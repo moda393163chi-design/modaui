@@ -35,20 +35,34 @@ export default function AppStoreView({ tenantId, onAddLog }: AppStoreViewProps) 
     setLoading(true);
     try {
       // 1. Fetch predefined plugins from backend catalog
-      const availableApps: AppItem[] = await apiService.appStore.list();
+      const res = await apiService.appStore.list();
+      const availableApps: AppItem[] = Array.isArray(res) ? res : (res && (res as any).apps) || [];
       setApps(availableApps);
 
-      // 2. We can load installed apps
+      // 2. Fetch current installations from the backend API
+      let activeIds: string[] = [];
+      try {
+        const installRes = await apiService.appStore.listInstallations(tenantId);
+        if (installRes && installRes.success && Array.isArray(installRes.installations)) {
+          activeIds = installRes.installations.map((inst: any) => inst.appId);
+        }
+      } catch (e) {
+        console.warn("Failed to fetch installations via API, using local storage fallback:", e);
+      }
+
+      // Merge with localStorage for resilience
       const storedKey = `modaui_installed_apps_${tenantId}`;
       const stored = localStorage.getItem(storedKey);
       if (stored) {
-        setInstalledAppIds(JSON.parse(stored));
-      } else {
+        const storedIds = JSON.parse(stored);
+        activeIds = Array.from(new Set([...activeIds, ...storedIds]));
+      } else if (activeIds.length === 0) {
         // Safe default: pre-activate WeChat Shop and SF express links
-        const defaults = ["wechat_miniprogram", "sf_express_cargo"];
-        localStorage.setItem(storedKey, JSON.stringify(defaults));
-        setInstalledAppIds(defaults);
+        activeIds = ["wechat_miniprogram", "sf_express_cargo"];
       }
+
+      localStorage.setItem(storedKey, JSON.stringify(activeIds));
+      setInstalledAppIds(activeIds);
     } catch (err) {
       console.error("Failed to load App Store:", err);
     } finally {

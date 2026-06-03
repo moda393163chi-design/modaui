@@ -30,6 +30,8 @@ import ChannelsView from './ChannelsView';
 import StorefrontView from './StorefrontView';
 import AppStoreView from './AppStoreView';
 import DeveloperConsoleView from './DeveloperConsoleView';
+import RoleManagementPanel from './RoleManagementPanel';
+import { UserRole } from '../services/rbac';
 import { 
   collection, 
   doc, 
@@ -274,6 +276,19 @@ const ChnTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
+const getIndustryDefaultHeadline = (indId: string) => {
+  const defaults: Record<string, string> = {
+    fashion: '👗 Aria 季风高定系列 · 舒感美学新风尚',
+    catering: '☕ Tyson Cafe · 经典美式/手作拿铁特惠',
+    retail: '✈️ 全球尖货精选直邮 · 发现品质生活好物',
+    beauty: '💄 Coco Salon · 焕活平衡 SPA 与定制深层理疗',
+    fitness: '🏋️ Kelly Gym · 尊享周度私教定制与低碳膳食',
+    jewelry: '💎 18K足金古法拉丝龙凤金镯 · 匠人高定传承',
+    home: '🛋️ 空间美学 · 环保级棉麻主卧全套风格软装'
+  };
+  return defaults[indId] || defaults.catering;
+};
+
 export default function MerchantDashboard({ 
   industry, 
   strategy, 
@@ -283,8 +298,8 @@ export default function MerchantDashboard({
   onUpdateRole
 }: MerchantDashboardProps) {
   // Backstage Active Menu State
-  // 'workbench' | 'store' | 'product' | 'order' | 'customer' | 'marketing' | 'analytics' | 'settings' | 'team_members' | 'app_store' | 'developer'
-  const [activeMenu, setActiveMenu] = useState<'workbench' | 'store' | 'product' | 'order' | 'customer' | 'marketing' | 'analytics' | 'settings' | 'team_members' | 'app_store' | 'developer'>('workbench');
+  // 'workbench' | 'store' | 'product' | 'order' | 'customer' | 'marketing' | 'analytics' | 'settings' | 'team_members' | 'app_store' | 'developer' | 'rbac'
+  const [activeMenu, setActiveMenu] = useState<'workbench' | 'store' | 'product' | 'order' | 'customer' | 'marketing' | 'analytics' | 'settings' | 'team_members' | 'app_store' | 'developer' | 'rbac'>('workbench');
   
   const [sales, setSales] = useState(25488.60);
 
@@ -443,7 +458,7 @@ export default function MerchantDashboard({
   // Interactive Mock Workspace States
   // 1. Store Decoration mock state
   const [storeTheme, setStoreTheme] = useState<'retro' | 'dark' | 'classic'>('retro');
-  const [storeHeadline, setStoreHeadline] = useState(industry.id === 'catering' ? '☕ Tyson Cafe · 经典美式/手作拿铁特惠' : '🧺 摩登法式·100%呼吸感亚麻新品首发');
+  const [storeHeadline, setStoreHeadline] = useState(getIndustryDefaultHeadline(industry.id));
   const [isGeneratingWebsite, setIsGeneratingWebsite] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
@@ -543,7 +558,7 @@ export default function MerchantDashboard({
         try {
           await setDoc(doc(db, 'tenants', tenantId), {
             merchantName: `${industry.name}极智协同总站`,
-            companySlogan: industry.id === 'catering' ? '☕ Tyson Cafe · 经典美式/手作拿铁特惠' : '🧺 摩登法式·100%呼吸感亚麻新品首发',
+            companySlogan: getIndustryDefaultHeadline(industry.id),
             status: 'active',
             billingTier: 'trial',
             tokenBalance: 1500000,
@@ -930,6 +945,32 @@ export default function MerchantDashboard({
   const [mktTopic, setMktTopic] = useState('');
   const [mktOutput, setMktOutput] = useState('');
   const [mktLoading, setMktLoading] = useState(false);
+
+  // Automated Campaign management states
+  const [campaignList, setCampaignList] = useState<any[]>([]);
+  const [campPlatform, setCampPlatform] = useState<'wechat' | 'xiaohongshu' | 'tiktok'>('xiaohongshu');
+  const [campType, setCampType] = useState<'coupon' | 'influencer_matrix' | 'bidding' | 'rebate'>('influencer_matrix');
+  const [isCreatingCampaign, setIsCreatingCampaign] = useState(false);
+
+  const fetchCampaigns = async () => {
+    try {
+      const response = await fetch(`/api/campaigns?tenantId=${industry.id}`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && Array.isArray(data.campaigns)) {
+          setCampaignList(data.campaigns);
+        }
+      }
+    } catch (e) {
+      console.warn("Failed to fetch campaigns:", e);
+    }
+  };
+
+  useEffect(() => {
+    if (activeMenu === 'marketing') {
+      fetchCampaigns();
+    }
+  }, [activeMenu]);
 
   const bottomLogsRef = useRef<HTMLDivElement>(null);
   const bottomChatsRef = useRef<HTMLDivElement>(null);
@@ -2410,6 +2451,7 @@ const handleRestoreFromDrive = async () => {
               { id: 'app_store', label: 'App Store', desc: '功能扩展', emoji: '🔌', icon: Layers },
               { id: 'developer', label: '开发者中心', desc: '接口配置', emoji: '💻', icon: Key },
               { id: 'team_members', label: '团队成员', desc: '专家头像', emoji: '🤖', icon: Award },
+              { id: 'rbac', label: '权限管理', desc: 'RBAC角色', emoji: '🛡️', icon: ShieldAlert },
               { id: 'settings', label: '设置', desc: '核心设置', emoji: '⚙️', icon: Settings },
             ].map((menuItem) => {
               const Icon = menuItem.icon;
@@ -2474,7 +2516,8 @@ const handleRestoreFromDrive = async () => {
                   activeMenu === 'analytics' ? '收支分析' :
                   activeMenu === 'team_members' ? '团队智能专家' :
                   activeMenu === 'app_store' ? '软件插件商店' :
-                  activeMenu === 'developer' ? '开发者 API 中枢' : '安全设置'
+                  activeMenu === 'developer' ? '开发者 API 中枢' :
+                  activeMenu === 'rbac' ? '账号角色权限规约 (RBAC Panel)' : '安全设置'
                 }</span>
               </h2>
               <p className="text-[11px] text-[#8B949E] font-mono mt-0.5">
@@ -2487,7 +2530,8 @@ const handleRestoreFromDrive = async () => {
                  activeMenu === 'analytics' ? '损益趋势' :
                  activeMenu === 'team_members' ? 'AI专家智能形象绘设' :
                  activeMenu === 'app_store' ? 'SaaS官方插件装配' :
-                 activeMenu === 'developer' ? '双向 Webhooks 与密钥' : '接口配置'}
+                 activeMenu === 'developer' ? '双向 Webhooks 与密钥' :
+                 activeMenu === 'rbac' ? '企业级多维度操作权限及仿真调试' : '接口配置'}
               </p>
             </div>
 
@@ -3145,16 +3189,18 @@ const handleRestoreFromDrive = async () => {
                               {/* SCREEN 1: HOME 首页 */}
                               {simulatorTab === 'home' && (
                                 <div className="space-y-2.5 animate-fadeIn text-left flex-1 flex flex-col">
-                                  {/* Tyson Cafe Banner Header */}
+                                  {/* Dynamic Industry-Appropriate Banner Header */}
                                   <div className="rounded-2xl p-3 bg-gradient-to-br from-[#1b1e1a] to-[#2d3a2f] text-white relative overflow-hidden shadow-sm mt-1">
                                     <div className="absolute right-2 top-2 opacity-10"><Flame className="w-10 h-10" /></div>
                                     <div className="flex justify-between items-center">
-                                      <span className="font-extrabold text-[13px] tracking-tight text-amber-100 flex items-center">
-                                        ☕ Tyson Cafe <span className="bg-red-500 text-white font-mono text-[7px] px-1 py-0.5 rounded ml-1 animate-pulse">AI店</span>
+                                      <span className="font-extrabold text-[12px] tracking-tight text-amber-100 flex items-center gap-1 min-w-0">
+                                        <span className="shrink-0">{industry.id === 'catering' ? '☕' : industry.id === 'fashion' ? '👗' : industry.id === 'retail' ? '✈️' : industry.id === 'beauty' ? '💄' : industry.id === 'fitness' ? '🏋️' : industry.id === 'jewelry' ? '💎' : '🛋️'}</span>
+                                        <span className="truncate">{merchantName || `${industry.name}极智店`}</span>
+                                        <span className="bg-red-500 text-white font-mono text-[7px] px-1 py-0.5 rounded ml-1 animate-pulse shrink-0">AI店</span>
                                       </span>
-                                      <span className="text-[7.5px] px-1.5 py-0.5 bg-white/10 rounded-full">AI团队为您服务 👩‍🍳</span>
+                                      <span className="text-[7.5px] px-1.5 py-0.5 bg-white/10 rounded-full shrink-0">AI团队服务 🧑‍💻</span>
                                     </div>
-                                    <p className="text-[8px] text-zinc-300 mt-1">今日营业 10:00 - 22:00 • ⭐ 4.9</p>
+                                    <p className="text-[8px] text-zinc-300 mt-1">今日营业 09:00 - 22:30 • ⭐ 4.9</p>
                                     <div className="flex items-center space-x-1.5 mt-2 border-t border-white/10 pt-1.5">
                                       <div className="flex -space-x-1">
                                         <div className="w-3.5 h-3.5 rounded-full bg-orange-500 text-[6.5px] flex items-center justify-center font-bold text-white border border-black">Kai</div>
@@ -5853,6 +5899,244 @@ const handleRestoreFromDrive = async () => {
                       )}
                     </div>
                   </div>
+
+                  {/* Automated Intelligent Campaigns Section */}
+                  <div className="bg-[#09090B] border border-[#2F3336] p-5 rounded-xl space-y-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#2F3336] pb-4">
+                      <div>
+                        <h4 className="text-sm font-bold text-white tracking-tight flex items-center gap-1.5 animate-fadeIn">
+                          🛡️ 智能自动投放大盘 (AI Auto-Campaign Matrix)
+                        </h4>
+                        <p className="text-[11px] text-zinc-400 mt-0.5">
+                          由 AI 智能推广专家自主进行预算分配、文案下发与跨渠道全网爆量
+                        </p>
+                      </div>
+                      
+                      {/* Interactive Trigger block to spawn new Auto-campaign */}
+                      <button
+                        onClick={async () => {
+                          if (!mktTopic.trim()) {
+                            setLogs(prev => [
+                              ...prev,
+                              {
+                                id: Math.random().toString(),
+                                timestamp: new Date().toLocaleTimeString('zh-CN', { hour12: false }),
+                                sender: 'AI营销大盘',
+                                emoji: '⚠️',
+                                message: '启动自动营销投放前，请先在上方「营销种草」文本栏中录入核心卖点或产品名。',
+                                type: 'error'
+                              }
+                            ]);
+                            return;
+                          }
+                          setIsCreatingCampaign(true);
+                          try {
+                            const response = await fetch('/api/campaigns/create', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({
+                                merchantId: industry.id,
+                                name: `[AI精投] ${mktTopic} 智能扩客计划`,
+                                type: campType,
+                                platform: campPlatform,
+                                budgetSpend: mktBudget,
+                                smartCopywriterPrompt: `卖点: ${mktTopic}, 要求根据行业 ${industry.name} 定制`,
+                                generatedCopy: mktOutput || `【AI 智能自适应带货】针对「${mktTopic}」的全网精准流量捕获中，极速覆盖私域及公域。`
+                              })
+                            });
+                            const data = await response.json();
+                            if (data.success) {
+                              setLogs(prev => [
+                                ...prev,
+                                {
+                                  id: Math.random().toString(),
+                                  timestamp: new Date().toLocaleTimeString('zh-CN', { hour12: false }),
+                                  sender: 'AI营销专员',
+                                  emoji: '⚡',
+                                  message: `【${selectedStaff.name}】成功向后端注册新自动化营销方案「${mktTopic} 智能扩客计划」，并开始调用 Gemini 自动匹配精准受众标签。`,
+                                  type: 'success'
+                                }
+                              ]);
+                              setMktTopic('');
+                              setMktOutput('');
+                              fetchCampaigns();
+                            }
+                          } catch (e) {
+                            console.error(e);
+                          } finally {
+                            setIsCreatingCampaign(false);
+                          }
+                        }}
+                        disabled={isCreatingCampaign}
+                        className="bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 transition-all text-black font-extrabold text-[11px] px-4 py-2 rounded-lg cursor-pointer flex items-center gap-1 shrink-0"
+                      >
+                        {isCreatingCampaign ? '正在对接API...' : '⚡ 一键发起智能化拓客投放'}
+                      </button>
+                    </div>
+
+                    {/* New Campaign Configuration Inputs */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-black/60 p-4 rounded-xl border border-[#2F3336]/40">
+                      <div>
+                        <label className="text-[10px] text-[#8B949E] font-mono block mb-1.5 uppercase">投放生态通道 (Platform Channel)</label>
+                        <div className="grid grid-cols-3 gap-2">
+                          {[
+                            { id: 'xiaohongshu', label: '小红书' },
+                            { id: 'tiktok', label: 'TikTok' },
+                            { id: 'wechat', label: '微信朋友圈' },
+                          ].map((ch) => (
+                            <button
+                              key={ch.id}
+                              type="button"
+                              onClick={() => setCampPlatform(ch.id as any)}
+                              className={`text-[11px] py-1.5 rounded transition-all font-medium border ${
+                                campPlatform === ch.id 
+                                  ? 'border-[#1D9BF0] bg-[#1D9BF0]/10 text-[#1D9BF0]' 
+                                  : 'border-[#2F3336] bg-[#050505] text-gray-400 hover:border-gray-600'
+                              }`}
+                            >
+                              {ch.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="text-[10px] text-[#8B949E] font-mono block mb-1.5 uppercase">智能触达模式 (Campaign Type)</label>
+                        <div className="grid grid-cols-2 gap-2">
+                          {[
+                            { id: 'influencer_matrix', label: '多KOL置换矩阵' },
+                            { id: 'coupon', label: '社交特惠礼券' },
+                          ].map((t) => (
+                            <button
+                              key={t.id}
+                              type="button"
+                              onClick={() => setCampType(t.id as any)}
+                              className={`text-[11px] py-1.5 px-2 rounded truncate transition-all font-medium border ${
+                                campType === t.id 
+                                  ? 'border-emerald-500 bg-emerald-500/10 text-emerald-400' 
+                                  : 'border-[#2F3336] bg-[#050505] text-gray-400 hover:border-gray-600'
+                              }`}
+                            >
+                              {t.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Campaigns List */}
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center text-[10px] font-mono text-gray-500 uppercase">
+                        <span>当前在线营销计划 ({campaignList.length})</span>
+                        <span>累计产出与 ROI 成效</span>
+                      </div>
+
+                      {campaignList.length === 0 ? (
+                        <div className="p-8 rounded-xl border border-dashed border-[#2F3336] text-center text-zinc-500 text-xs">
+                          🦖 暂无正在运行的营销计划。请在上方录入营销关键字，并点击「一键发起智能化拓客投放」启动！
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-1 gap-3">
+                          {campaignList.map((camp) => {
+                            const isLaunched = camp.status === 'active';
+                            return (
+                              <div 
+                                key={camp.id} 
+                                className="bg-[#050505] border border-[#2F3336]/80 p-4 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:border-zinc-700 transition-all"
+                              >
+                                <div className="space-y-1.5 flex-1 min-w-0">
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <span className="font-bold text-white text-xs truncate">{camp.name}</span>
+                                    <span className={`text-[9px] px-2 py-0.5 rounded font-mono uppercase ${
+                                      camp.platform === 'xiaohongshu' ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' :
+                                      camp.platform === 'tiktok' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' :
+                                      'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                                    }`}>
+                                      {camp.platform}
+                                    </span>
+                                    <span className={`text-[9px] px-2 py-0.5 rounded font-mono ${
+                                      camp.type === 'coupon' ? 'bg-amber-500/15 text-amber-400' : 'bg-indigo-500/15 text-indigo-400'
+                                    }`}>
+                                      {camp.type === 'coupon' ? '神券裂变' : '达人置换'}
+                                    </span>
+                                  </div>
+
+                                  {camp.generatedCopy && (
+                                    <p className="text-[11px] text-zinc-400 line-clamp-1 italic bg-black/40 p-1.5 rounded font-mono border border-neutral-900">
+                                      📝 文案: {camp.generatedCopy}
+                                    </p>
+                                  )}
+
+                                  <div className="flex items-center gap-4 text-[10px] font-mono text-gray-500">
+                                    <span>预算花费: <strong className="text-neutral-300 font-bold">¥{camp.budgetSpend}</strong></span>
+                                    <span>累计转化: <strong className="text-neutral-300 font-bold">{camp.conversionCount || 0}人</strong></span>
+                                    <span>创建于: {new Date(camp.createdAt).toLocaleDateString()}</span>
+                                  </div>
+                                </div>
+
+                                <div className="flex sm:flex-col items-end gap-3 sm:gap-1.5 self-stretch sm:self-auto justify-between sm:justify-start">
+                                  <div className="flex items-center gap-4">
+                                    <div className="text-right">
+                                      <span className="text-[10px] text-gray-400 block font-mono">收益/ROI</span>
+                                      <span className="text-xs font-mono font-bold text-emerald-400">
+                                        ¥{(camp.revenueGenerated || 0).toLocaleString()} 
+                                        <span className="text-[9px] text-[#8B949E] ml-1 bg-[#111] px-1 py-0.5 rounded">
+                                          {(camp.roi || 0).toFixed(1)}x
+                                        </span>
+                                      </span>
+                                    </div>
+                                    <div className="flex items-center gap-1 w-14">
+                                      <span className={`w-2 h-2 rounded-full ${isLaunched ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
+                                      <span className="text-[10px] font-mono text-zinc-400">
+                                        {isLaunched ? '投放中' : '已暂停'}
+                                      </span>
+                                    </div>
+                                  </div>
+
+                                  {/* Launch or Pause Campaign trigger */}
+                                  <button
+                                    onClick={async () => {
+                                      const nextStatus = isLaunched ? 'paused' : 'active';
+                                      try {
+                                        const response = await fetch(`/api/campaigns/${camp.id}/launch`, {
+                                          method: 'POST',
+                                          headers: { 'Content-Type': 'application/json' },
+                                          body: JSON.stringify({ merchantId: industry.id })
+                                        });
+                                        if (response.ok) {
+                                          setLogs(prev => [
+                                            ...prev,
+                                            {
+                                              id: Math.random().toString(),
+                                              timestamp: new Date().toLocaleTimeString('zh-CN', { hour12: false }),
+                                              sender: 'AI营销后台',
+                                              emoji: '🚀',
+                                              message: `AI 调整计划 「${camp.name}」 状态为 [${isLaunched ? '暂停投放' : '全网拉量投放中'}]，API 修改同步完成。`,
+                                              type: 'info'
+                                            }
+                                          ]);
+                                          fetchCampaigns();
+                                        }
+                                      } catch (e) {
+                                        console.error(e);
+                                      }
+                                    }}
+                                    className={`text-[10px] font-bold px-2.5 py-1 rounded transition-all cursor-pointer ${
+                                      isLaunched 
+                                        ? 'bg-amber-500/20 text-amber-400 hover:bg-amber-500/30' 
+                                        : 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30'
+                                    }`}
+                                  >
+                                    {isLaunched ? '暂停投放' : '投流爆量'}
+                                  </button>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -6097,7 +6381,7 @@ const handleRestoreFromDrive = async () => {
                               value={editSlogan}
                               onChange={(e) => setEditSlogan(e.target.value)}
                               className="w-full bg-black border border-[#2F3336] focus:border-[#38BDF8] rounded-lg p-2.5 text-xs text-white focus:outline-none font-sans"
-                              placeholder="如: Tyson Cafe · 经典美式特惠"
+                              placeholder="请输入商户推广标语，如：经典系列·特惠限量发售"
                             />
                           </div>
 
@@ -7028,6 +7312,42 @@ const handleRestoreFromDrive = async () => {
               {activeMenu === 'developer' && (
                 <DeveloperConsoleView 
                   tenantId={industry.id} 
+                  onAddLog={(sender, emoji, message, type) => {
+                    setLogs((prev) => [
+                      ...prev,
+                      {
+                        id: Math.random().toString(),
+                        timestamp: new Date().toLocaleTimeString('zh-CN', { hour12: false }),
+                        sender,
+                        emoji,
+                        message,
+                        type
+                      }
+                    ]);
+                  }}
+                />
+              )}
+
+              {/* VIEW 12: ROLE-BASED ACCESS CONTROL PANEL (🛡️ 权限管理) */}
+              {activeMenu === 'rbac' && (
+                <RoleManagementPanel 
+                  tenantId={industry.id} 
+                  currentRole={
+                    userRole === 'admin' ? 'Platform Admin' :
+                    userRole === 'founder' ? 'Merchant Owner' :
+                    userRole === 'manager' ? 'Manager' :
+                    userRole === 'staff' ? 'Staff' : 'Customer'
+                  }
+                  onRoleChange={(newRole) => {
+                    if (onUpdateRole) {
+                      const propRole = 
+                        newRole === 'Platform Admin' ? 'admin' :
+                        newRole === 'Merchant Owner' ? 'founder' :
+                        newRole === 'Manager' ? 'manager' :
+                        newRole === 'Staff' ? 'staff' : 'customer';
+                      onUpdateRole(propRole);
+                    }
+                  }}
                   onAddLog={(sender, emoji, message, type) => {
                     setLogs((prev) => [
                       ...prev,

@@ -17,7 +17,6 @@
     "allowImportingTsExtensions": true,
     "noEmit": true,
     
-    "// Firebase 优化": "下面的配置用于优化 Firebase 打包",
     "baseUrl": ".",
     "esModuleInterop": true,
     "resolveJsonModule": true,

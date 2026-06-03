@@ -75,7 +75,6 @@ export default defineConfig(({ command, mode }) => {
     optimizeDeps: {
       // 预绑定 Firebase 以提高初始加载速度
       include: [
-        'firebase',
         'firebase/app',
         'firebase/auth',
         'firebase/firestore',
