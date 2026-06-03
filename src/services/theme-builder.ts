@@ -11,7 +11,7 @@ export interface StorefrontTheme {
 }
 
 export const INDUSTRY_THEMES: Record<string, StorefrontTheme> = {
-  clothing: {
+  fashion: {
     primaryColor: "#57534E", // Warm Slate Stone
     accentColor: "#D6D3D1",
     backgroundColor: "#F5F5F4",
@@ -38,39 +38,40 @@ export const INDUSTRY_THEMES: Record<string, StorefrontTheme> = {
     buttonRadius: "full", // Playful silk curves
     vibeLabel: "轻奢优雅美容美发沙龙 (Rose Silk Blossom Style)"
   },
-  fitness: {
-    primaryColor: "#312E81", // Indigo Sport Core
-    accentColor: "#4F46E5",
-    backgroundColor: "#EEF2FF",
-    borderColor: "#E0E7FF",
-    textColor: "#1E1B4B",
-    buttonRadius: "sm", // Tech athletics
-    vibeLabel: "高能深沉运动健身会馆 (Indigo Sport Core Style)"
+  hotel: {
+    primaryColor: "#0F172A", // Midnight Sapphire
+    accentColor: "#38BDF8",
+    backgroundColor: "#F8FAFC",
+    borderColor: "#E2E8F0",
+    textColor: "#0F172A",
+    buttonRadius: "md",
+    vibeLabel: "精品酒店与民宿 (Modern Boutique Hospitality Style)"
   },
-  jewelry: {
-    primaryColor: "#D97706", // Gold luxury Amber Gold
-    accentColor: "#F59E0B",
-    backgroundColor: "#FEF3C7",
-    borderColor: "#FDE68A",
-    textColor: "#78350F",
-    buttonRadius: "none", // Precision diamond cuts
-    vibeLabel: "高定奢贵金灿珠宝大赏 (Diamond Golden Luxury Style)"
-  },
-  home: {
-    primaryColor: "#78350F", // Wood Brown Warmth
-    accentColor: "#B45309",
-    backgroundColor: "#FDF8F6",
-    borderColor: "#F6EAE2",
-    textColor: "#451A03",
-    buttonRadius: "md", // Safe organic roundings
-    vibeLabel: "雅致温润北欧大件家居 (North-Organic Wood Aesthetic Style)"
+  creator: {
+    primaryColor: "#7C3AED", // Creator Purple
+    accentColor: "#8B5CF6",
+    backgroundColor: "#F5F3FF",
+    borderColor: "#EDE9FE",
+    textColor: "#312E81",
+    buttonRadius: "full",
+    vibeLabel: "电商直播与内容创作 (Creator Commerce Studio Style)"
   }
+};
+
+const DEFAULT_NEUTRAL_THEME: StorefrontTheme = {
+  primaryColor: "#374151",
+  accentColor: "#60A5FA",
+  backgroundColor: "#F8FAFC",
+  borderColor: "#CBD5E1",
+  textColor: "#111827",
+  buttonRadius: "md",
+  vibeLabel: "通用行业风格 (Neutral Industry Theme)"
 };
 
 export const themeBuilderService = {
   getThemeForIndustry(industryId: string): StorefrontTheme {
-    const cleanId = industryId?.toLowerCase() || 'clothing';
-    return INDUSTRY_THEMES[cleanId] || INDUSTRY_THEMES['clothing'];
+    const cleanId = industryId?.toLowerCase();
+    return (cleanId && INDUSTRY_THEMES[cleanId]) || DEFAULT_NEUTRAL_THEME;
   },
 
   getCustomBrandingTheme(tenantId: string, defaultIndustry: string): StorefrontTheme {
@@ -87,7 +88,7 @@ export const themeBuilderService = {
   },
 
   updateCustomBrandingTheme(tenantId: string, customTheme: Partial<StorefrontTheme>): StorefrontTheme {
-    const current = this.getCustomBrandingTheme(tenantId, 'clothing');
+    const current = this.getCustomBrandingTheme(tenantId, 'fashion');
     const updated = { ...current, ...customTheme };
     localStorage.setItem(`modaui_style_theme_${tenantId}`, JSON.stringify(updated));
     return updated;

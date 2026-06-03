@@ -207,7 +207,7 @@ export const INDUSTRIES: IndustryData[] = [
     ]
   },
   {
-    id: 'influencer',
+    id: 'creator',
     name: '电商网红',
     emoji: '📱',
     tagline: '流量变现持续增长',
@@ -248,6 +248,33 @@ export const INDUSTRIES: IndustryData[] = [
     ]
   }
 ];
+
+export const INDUSTRY_KNOWLEDGE: Record<string, string> = {
+  fashion: 'fashion_knowledge',
+  catering: 'restaurant_knowledge',
+  retail: 'retail_knowledge',
+  beauty: 'beauty_knowledge',
+  hotel: 'hotel_knowledge',
+  creator: 'creator_knowledge'
+};
+
+export const INDUSTRY_TEMPLATE_CATEGORIES: Record<string, string[]> = {
+  fashion: ['T恤', '连衣裙', '牛仔裤'],
+  catering: ['套餐', '饮品', '小食'],
+  retail: ['家居好物', '数码配件', '个人护理'],
+  beauty: ['疗程', '护肤套装', '预约服务'],
+  hotel: ['房型', '套餐', '服务'],
+  creator: ['选品', '内容', '直播']
+};
+
+export const INDUSTRY_BACKEND_MENUS: Record<string, string[]> = {
+  fashion: ['商品设计', '款式分析', '选品管理', '库存管理'],
+  catering: ['菜单管理', '外卖管理', '门店管理', '库存管理'],
+  retail: ['选品管理', '库存管理', '营销管理', '运营管理'],
+  beauty: ['产品管理', '客户管理', '营销管理', '预约管理'],
+  hotel: ['房态管理', '预订管理', '入住管理', '收益管理'],
+  creator: ['选品管理', '内容管理', '直播管理', '运营管理']
+};
 
 export const PRICING_PLANS: PricingPlan[] = [
   {

@@ -7,7 +7,7 @@ import {
 interface ShopInstance {
   id: string;
   name: string;
-  industry: 'catering' | 'retail' | 'fashion' | 'beauty' | 'fitness' | 'jewelry';
+  industry: 'catering' | 'retail' | 'fashion' | 'beauty' | 'hotel' | 'creator';
   founderEmail: string;
   planLevel: 'Trial' | 'Pro' | 'Enterprise';
   dailyTokens: number;
@@ -50,8 +50,8 @@ export default function PlatformAdminView({
   const [sqlQuery, setSqlQuery] = useState<string>('SELECT * FROM memory_nodes WHERE score >= 0.90 ORDER BY score DESC;');
   const [sqlResultTable, setSqlResultTable] = useState<Array<Record<string, any>>>([
     { id: 'mem_1', user: 'landmarkglobaltrade@gmail.com', content: '拥有定制服装品牌。主营高端羊绒，下单偏好顺丰重货航空件寄送。', score: 0.94 },
-    { id: 'mem_2', user: 'chloe_vip@luxury.com', content: '高定奢华珠宝常客。必须随单附带国家珠宝玉石质检证书 (NGTC)。', score: 0.98 },
-    { id: 'mem_3', user: 'brucediet@fitness.org', content: '轻食健康餐订制。对牛油果及大豆异黄酮成分轻微过敏，需阻断含豆奶配方。', score: 0.89 },
+    { id: 'mem_2', user: 'creator_hype@gmail.com', content: '电商网红带货策略。要求实时补货、商品标签精准匹配和直播间节奏控制。', score: 0.98 },
+    { id: 'mem_3', user: 'hotel_ops@gmail.com', content: '精品民宿客房管理。追踪房态、定价与预订渠道收益，避免重复入住。', score: 0.89 },
     { id: 'mem_4', user: 'amber_beauty@salon.com', content: '采购常客。订购耗材常选择高定防霉环保外包装，要求按周二、周五分批入库。', score: 0.91 }
   ]);
   const [sqlConsoleLogs, setSqlConsoleLogs] = useState<string[]>(['Sqlite3 local instance initialized successfully on in-memory DB. Ready.']);
@@ -430,7 +430,9 @@ export default function PlatformAdminView({
 
   const [shops, setShops] = useState<ShopInstance[]>([
     { id: 'sh1', name: '摩登时装 AI 有限公司', industry: 'fashion', founderEmail: 'landmarkglobaltrade@gmail.com', planLevel: 'Pro', dailyTokens: 42000, cpuQuota: '2.5 Cores', totalSalesSimulated: 25488.6, status: 'active' },
-    { id: 'sh2', name: '摩登餐饮 AI 有限公司', industry: 'catering', founderEmail: 'catering_master@gmail.com', planLevel: 'Trial', dailyTokens: 15000, cpuQuota: '1.0 Cores', totalSalesSimulated: 10450.0, status: 'active' }
+    { id: 'sh2', name: '摩登餐饮 AI 有限公司', industry: 'catering', founderEmail: 'catering_master@gmail.com', planLevel: 'Trial', dailyTokens: 15000, cpuQuota: '1.0 Cores', totalSalesSimulated: 10450.0, status: 'active' },
+    { id: 'sh3', name: '摩登酒店 AI 有限公司', industry: 'hotel', founderEmail: 'hotel_ops@gmail.com', planLevel: 'Pro', dailyTokens: 26000, cpuQuota: '2.0 Cores', totalSalesSimulated: 17920.0, status: 'active' },
+    { id: 'sh4', name: '摩登电商网红 AI 有限公司', industry: 'creator', founderEmail: 'creator_hype@gmail.com', planLevel: 'Pro', dailyTokens: 31000, cpuQuota: '2.0 Cores', totalSalesSimulated: 20410.0, status: 'active' }
   ]);
 
   const handleAuditDiagnostics = () => {
@@ -457,8 +459,8 @@ export default function PlatformAdminView({
   const modulesChecklist = [
     // 1. 前端官网
     { section: '前端官网 (Home Portal)', id: 'home_portal', label: '首页 Banner & 亮点陈列', status: 'completed', file: '/src/App.tsx', spec: '结合 motion 优雅渲染 SaaS 核心卖点', devNotes: '静态页面和亮点文案及视频背景均已完成，高质感渲染完美。' },
-    { section: '前端官网 (Home Portal)', id: 'home_industry', label: '行业选择通道', status: 'completed', file: '/src/App.tsx', spec: '支持服装/餐饮/美容/健身/珠宝/家居六大入口', devNotes: '已挂载一键引导至全自主智体创建及分包路由。' },
-    { section: '前端官网 (Home Portal)', id: 'home_teambio', label: 'AI团队介绍说明', status: 'completed', file: '/src/components/AITeamsView.tsx', spec: '展示各行业 6 名核心数字员工的高能岗位', devNotes: '已由 4 智体横向扩容至 6 智体完备架构，具备超高精算与执行力。' },
+    { section: '前端官网 (Home Portal)', id: 'home_industry', label: '行业选择通道', status: 'completed', file: '/src/App.tsx', spec: '支持服装/餐饮/百货/美业/酒店/电商网红六大入口', devNotes: '已挂载一键引导至全专属行业企业系统。' },
+    { section: '前端官网 (Home Portal)', id: 'home_teambio', label: 'AI团队介绍说明', status: 'completed', file: '/src/components/AITeamsView.tsx', spec: '展示每个行业固定 4 名核心 AI 角色', devNotes: '已将每个行业团队严格收敛为专属岗位清单，保证业务隔离。' },
     { section: '前端官网 (Home Portal)', id: 'home_case', label: '行业自动运行流水账目', status: 'completed', file: '/src/App.tsx', spec: '更新各商铺的累计实际营收流水折线图', devNotes: '自动周期流计算通道，实现自主波形实时渲染，反馈极其便利。' },
     { section: '前端官网 (Home Portal)', id: 'home_pricing', label: '价格梯度方案', status: 'completed', file: '/src/components/PlatformAdminView.tsx', spec: 'Trial/Pro/Enterprise 三大算力包比价表', devNotes: '不仅在官网展示，也在 SaaS 平台超级总后台中支持配额审计。' },
     { section: '前端官网 (Home Portal)', id: 'home_login', label: '快捷登录与注册弹窗', status: 'completed', file: '/src/App.tsx', spec: '支持一键注册与持久状态记忆', devNotes: '现采用 localState 与持久态双缓存通道，并完全预留 Firestore 统一。' },

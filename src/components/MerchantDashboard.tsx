@@ -143,110 +143,164 @@ const getManagers = (industryId: string): Manager[] => {
         specialty: '精敏直通车调价竞价、大促满减券派发策略、品牌曝光推播策划'
       }
     ];
-  } else {
-    // Default: 'fashion' 服装公司
+  } else if (industryId === 'beauty') {
     return [
       {
         roleId: 'designer',
         role: 'AI设计师',
-        emoji: '👗',
-        name: '时装设计师 Aria',
-        desc: '负责服装线上装修、版图搭配、微店页面整体视觉设计与UI风格排布。配置比例：店铺 70%、产品 30%。',
-        welcome: '我是您的 AI设计师 Aria。我负责服装页面的视觉陈列、首页海报视觉设计、详情页穿搭排版。主要精力负责「店铺页面」与部分「产品详情」！',
-        specialty: '线上橱窗陈列、配色方案制定、海报视觉设计渲染'
+        emoji: '💄',
+        name: '美学设计师 Luna',
+        desc: '负责美业门店与产品的视觉包装、预约页设计与品牌形象塑造。主要负责：店铺 70%、产品 30%。',
+        welcome: '我是您的 AI设计师Luna。我负责美容门店的形象设计、海报与预约页视觉优化，确保品牌调性与客户体验一致。',
+        specialty: '视觉美学、品牌包装、预约页体验设计'
       },
       {
         roleId: 'product_mgr',
-        role: 'AI商品经理',
-        emoji: '👚',
-        name: '选品好手 Barton',
-        desc: '负责服装面料比对、潮流选品、极速快反打样排单与价格核定。配置比例：产品 100%。',
-        welcome: '我是您的 AI商品经理 Barton。我负责服装商品研发选品、规格多SKU/SPU建档上架及毛利定价。全权负责「产品页面」！',
-        specialty: '潮流热词选款、快反打样物耗、服装溢价与毛利率策略'
+        role: 'AI产品经理',
+        emoji: '🧴',
+        name: '产品经理 Yara',
+        desc: '负责护肤产品与疗程组合的研发、价格定位与门店推广。主要负责：产品 100%。',
+        welcome: '我是您的 AI产品经理Yara。我负责制定美容产品系列、疗程套餐和私域会员服务组合，提升复购与客单价。',
+        specialty: '产品组合设计、疗程定价、复购策略'
       },
       {
         roleId: 'ops_mgr',
         role: 'AI运营经理',
-        emoji: '📈',
-        name: '跟单专家 Cyrus',
-        desc: '负责分销渠道、SPU库存红线监控、一站式发往顺丰极速托揽与日常退款纠纷。配置比例：订单、客户、分析页面。',
-        welcome: '我是您的 AI运营经理 Cyrus。我负责订单一件代发托管、顺丰揽件打单、客户CRM退换退款拦截、资金损益对账。全权管控「订单、客户、分析」页面！',
-        specialty: '订单托管揽件、顺丰一件代发对接、每日资金结算周报'
+        emoji: '📊',
+        name: '运营专员 Iris',
+        desc: '负责客户预约调度、到店转化与售后维护。主要负责：订单、客户、分析。',
+        welcome: '我是您的 AI运营经理Iris。我负责美容门店的预约体系、客户回访与到店转化分析，让服务体验稳定增长。',
+        specialty: '预约管理、客户留存、运营分析'
       },
       {
         roleId: 'marketing_mgr',
         role: 'AI营销经理',
         emoji: '📣',
-        name: '宣发大咖 Daphne',
-        desc: '主导活动策划、全网优惠代金券发放、投放广告ROI精细化调优及博主寄样。配置比例：营销 100%。',
-        welcome: '我是您的 AI营销经理 Daphne。我负责活动策划、优惠代金券发放、推广ROI调优与小红书等社媒带货文案输出。全权对接「营销页面」！',
-        specialty: '小红书潮流穿搭种草文案、抖音短视起拍脚本、千万粉博主派样'
+        name: '推广官 Sage',
+        desc: '负责私域活动、达人种草和美容服务推广。主要负责：营销 100%。',
+        welcome: '我是您的 AI营销经理Sage。我策划小红书/微信社群推广活动，撰写精致种草文案，驱动到店预约增长。',
+        specialty: '私域推广、达人种草、活动策划'
       }
     ];
-  }
-};
-
-/*
-};��主拼单寄样投放策划。',
-        welcome: '我是您的 AI营销经理。我负责营销活动、优惠券、广告推广、小红书社媒文案输出。',
-        specialty: '社交穿搭种草内容运营、首发让利优惠精排、直通车出资投放'
-      }
-    ];
-  }
-};�经理。我负责活动策划、广告推广和内容营销。',
-        specialty: 'ROI千人千面精准引流、营销投放预算细调、带货推介脚本撰写'
-      }
-    ];
-  }
-
-};��出价千人千面推广文案创作。',
-        welcome: '我是您的 AI营销经理。我负责活动策划、广告推广和内容营销。',
-        specialty: '首发让利测品、优惠代金券精排、抖音挂车引流脚本'
-      }
-    ];
-  } else {
-    // Default: 'fashion' 服装公司
+  } else if (industryId === 'hotel') {
     return [
       {
-        roleId: 'store_mgr',
-        role: 'AI开店经理',
-        emoji: '🏪',
-        name: '装潢设计师 Aria',
-        desc: '负责线上店铺装修、版图搭配、微店页面整体视觉设计与网页排版。',
-        welcome: '我是您的 AI开店经理。我负责店铺装修、页面设计和一句话生成网站。',
-        specialty: '线上橱窗陈列、配色方案制定、一句话渲染店头氛围'
+        roleId: 'designer',
+        role: 'AI设计师',
+        emoji: '🛋️',
+        name: '空间设计师 Noel',
+        desc: '负责酒店品牌视觉与房态展示页面，塑造精品民宿的高端调性。主要负责：店铺 70%、产品 30%。',
+        welcome: '我是您的 AI设计师Noel。我负责酒店官网和房态展示的视觉设计，打造差异化入住体验页面。',
+        specialty: '品牌视觉、房态展示、预约页面设计'
+      },
+      {
+        roleId: 'product_mgr',
+        role: 'AI客房经理',
+        emoji: '🛎️',
+        name: '客房运营官 Pace',
+        desc: '负责房型与增值服务配置、套餐设计与收益定价。主要负责：产品 100%。',
+        welcome: '我是您的 AI客房经理Pace。我负责设定房型组合、营销套餐和增值服务，提升入住率和客单价值。',
+        specialty: '房型配置、服务套餐、收益管理'
+      },
+      {
+        roleId: 'ops_mgr',
+        role: 'AI运营经理',
+        emoji: '📊',
+        name: '运营专家 Bella',
+        desc: '负责订单预订、渠道管理以及房态同步。主要负责：订单、客户与分析。',
+        welcome: '我是您的 AI运营经理Bella。我负责酒店预订渠道管理、房态同步与入住流程保障，提升运营效率。',
+        specialty: '房态管理、渠道同步、入住优化'
+      },
+      {
+        roleId: 'marketing_mgr',
+        role: 'AI营销经理',
+        emoji: '✈️',
+        name: '营销官 Kira',
+        desc: '负责客户拓客与OTA活动策划。主要负责：营销 100%。',
+        welcome: '我是您的 AI营销经理Kira。我负责制定酒店促销活动、OTA曝光策略与差异化会员推广。',
+        specialty: 'OTA活动策划、促销策略、会员营销'
+      }
+    ];
+  } else if (industryId === 'creator') {
+    return [
+      {
+        roleId: 'designer',
+        role: 'AI设计师',
+        emoji: '🎨',
+        name: '直播视觉师 Vega',
+        desc: '负责直播间视觉氛围与内容封面设计。主要负责：店铺 70%、产品 30%。',
+        welcome: '我是您的 AI设计师Vega。我负责直播间视觉方案、封面排版以及内容图文设计，提升品牌识别。',
+        specialty: '直播视觉、内容图文、品牌包装'
       },
       {
         roleId: 'product_mgr',
         role: 'AI商品经理',
-        emoji: '👗',
-        name: '选品好手 Barton',
-        desc: '负责服装面料比对、潮流选品、极速快反打样排单与定价建议。',
-        welcome: '我是您的 AI商品经理。我负责服装选品、商品上架、商品图片和定价建议。',
-        specialty: '潮流热词选款、快反柔选比例、上架SPU建档与毛利定价'
+        emoji: '🛍️',
+        name: '选品官 Giles',
+        desc: '负责带货选品与爆款组合配置。主要负责：产品 100%。',
+        welcome: '我是您的 AI商品经理Giles。我负责筛选直播爆款、组合货品并优化带货转化。',
+        specialty: '选品策略、爆款组合、带货转化'
       },
       {
         roleId: 'ops_mgr',
         role: 'AI运营经理',
         emoji: '📈',
-        name: '跟单专家 Cyrus',
-        desc: '负责分销渠道维护、SPU库存红线监控、一站式订单极速托管发货。',
-        welcome: '我是您的 AI运营经理。我负责订单处理、库存建议和经营分析。',
-        specialty: '订单托管揽件、顺丰一件代发对接、每日资金结算周报'
+        name: '运营官 Sylvia',
+        desc: '负责直播排期、订单售后与平台流水核算。主要负责：订单、客户与分析。',
+        welcome: '我是您的 AI运营经理Sylvia。我负责直播计划、订单售后与运营数据监控，确保带货链路无缝。',
+        specialty: '直播排期、售后管理、运营数据'
       },
       {
         roleId: 'marketing_mgr',
         role: 'AI营销经理',
-        emoji: '📣',
-        name: '宣发大咖 Daphne',
-        desc: '负责撰写小红书穿搭种草内容、抖音探店脚本与建立博主拼单寄样。',
-        welcome: '我是您的 AI营销经理。我负责活动策划、广告推广和内容营销。',
-        specialty: '小红书潮流穿搭种草文案、抖音短视起拍脚本、千万粉博主派样'
+        emoji: '🎙️',
+        name: '内容官 Mercedes',
+        desc: '负责直播脚本、社媒推广与粉丝互动活动。主要负责：营销 100%。',
+        welcome: '我是您的 AI营销经理Mercedes。我负责直播脚本与社交引流活动，让每场带货更具吸引力。',
+        specialty: '直播脚本、社交推广、粉丝互动'
       }
     ];
   }
+
+  return [
+    {
+      roleId: 'designer',
+      role: 'AI设计师',
+      emoji: '🏢',
+      name: '行业设计师',
+      desc: '负责行业形象设计与视觉风格搭建。',
+      welcome: '我是您的 AI设计师。我负责行业品牌视觉与内容布局。',
+      specialty: '视觉设计、品牌形象、页面排布'
+    },
+    {
+      roleId: 'product_mgr',
+      role: 'AI商品经理',
+      emoji: '📦',
+      name: '行业选品官',
+      desc: '负责行业商品与服务规划。',
+      welcome: '我是您的 AI商品经理。我负责商品和服务组合的企划与优化。',
+      specialty: '选品策略、产品规划、价格定位'
+    },
+    {
+      roleId: 'ops_mgr',
+      role: 'AI运营经理',
+      emoji: '📈',
+      name: '行业运营官',
+      desc: '负责行业运营与客户服务保障。',
+      welcome: '我是您的 AI运营经理。我负责订单、客户与运营分析。',
+      specialty: '运营优化、客户管理、数据分析'
+    },
+    {
+      roleId: 'marketing_mgr',
+      role: 'AI营销经理',
+      emoji: '📣',
+      name: '行业营销官',
+      desc: '负责行业营销与活动推进。',
+      welcome: '我是您的 AI营销经理。我负责制定营销活动与流量策略。',
+      specialty: '营销策略、活动执行、品牌传播'
+    }
+  ];
 };
-*/
 
 const SlsTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
@@ -2075,12 +2129,34 @@ const handleRestoreFromDrive = async () => {
     if (role === 'AI设计师' || role === 'AI开店经理') {
       return ['布置店铺高级装潢视觉版块', '一句话实时微调首页促销标语', '设计生成视觉海报与穿搭详情页'];
     } else if (role === 'AI商品经理') {
-      return industryId === 'catering' ? 
-        ['更新今日堂食特惠新品', '开发健康营养低卡套餐', '核验食材出厂进价及毛利策略'] :
-        ['精选1688创意零售居家新品', '自动同步匹配一件代发供应商API', '对比全网活动类似竞品定价'];
+      if (industryId === 'catering') {
+        return ['更新今日堂食特惠新品', '开发健康营养低卡套餐', '核验食材出厂进价及毛利策略'];
+      }
+      if (industryId === 'retail') {
+        return ['精选1688创意零售居家新品', '自动同步匹配一件代发供应商API', '对比全网活动类似竞品定价'];
+      }
+      if (industryId === 'beauty') {
+        return ['配置美容疗程与护肤套装', '优化私域会员充值卡组合', '校对新款产品成分与安全申报文案'];
+      }
+      if (industryId === 'hotel') {
+        return ['设计房型与增值服务套餐', '调整周末高峰房价与预订策略', '检查渠道房态同步与异地OTA分发'];
+      }
+      if (industryId === 'creator') {
+        return ['筛选直播间爆款带货组合', '优化短视频脚本与换品节奏', '计算本场带货毛利与佣金分成'];
+      }
+      return ['规划行业商品与服务清单', '优化产品组合与定价策略', '评估供应链与毛利空间'];
     } else if (role === 'AI运营经理') {
       return ['检测渠道库存周转水位红线', '一键全流程跟单发货顺丰揽揽件', '全网稽核资金账期安全对账'];
     } else {
+      if (industryId === 'beauty') {
+        return ['更新小红书精品博主寄样文案', '编排美容馆探店短视频大纲', '精算美容服务促销ROI与复购模型'];
+      }
+      if (industryId === 'hotel') {
+        return ['策划周末酒店套餐推广', '优化OTA主页及评论文案', '设计会员礼遇与延长入住转化策略'];
+      }
+      if (industryId === 'creator') {
+        return ['撰写直播带货脚本与话术', '生成社媒互动活动与粉丝裂变方案', '计算直播节奏与转化率提升策略'];
+      }
       return ['更新小红书精品博主寄样穿搭文案', '编排抖音极客短视频起盘文大纲', '精算广告ROI测品推广让利出价'];
     }
   };
@@ -2923,7 +2999,7 @@ const handleRestoreFromDrive = async () => {
                   {storeSubTab === 'decoration' && (
                     <StorefrontView 
                       tenantId={tenantId}
-                      industryId={industry.id || 'catering'}
+                      industryId={industry.id}
                       onAddLog={(sender, emoji, msg, type) => setLogs(prev => [
                         ...prev, 
                         { id: Math.random().toString(), timestamp: new Date().toLocaleTimeString('zh-CN', { hour12: false }), sender, emoji, message: msg, type }
@@ -3104,7 +3180,7 @@ const handleRestoreFromDrive = async () => {
                           localStorage.setItem('preview_theme', storeTheme);
                           localStorage.setItem('preview_headline', storeHeadline);
                           localStorage.setItem('preview_company', industry.name);
-                          localStorage.setItem('preview_industry_id', industry.id || 'catering');
+                          localStorage.setItem('preview_industry_id', industry.id);
                           localStorage.setItem('preview_products', JSON.stringify(productsList));
                           localStorage.setItem('preview_tenant_id', tenantId);
 
@@ -3114,7 +3190,7 @@ const handleRestoreFromDrive = async () => {
                             merchantName: industry.name,
                             companySlogan: storeHeadline,
                             storeTheme: storeTheme,
-                            industryId: industry.id || 'catering',
+                            industryId: industry.id,
                             status: 'active'
                           }, { merge: true }).catch(err => console.error("Firestore tenant publish sync error: ", err));
 
@@ -3194,7 +3270,7 @@ const handleRestoreFromDrive = async () => {
                                     <div className="absolute right-2 top-2 opacity-10"><Flame className="w-10 h-10" /></div>
                                     <div className="flex justify-between items-center">
                                       <span className="font-extrabold text-[12px] tracking-tight text-amber-100 flex items-center gap-1 min-w-0">
-                                        <span className="shrink-0">{industry.id === 'catering' ? '☕' : industry.id === 'fashion' ? '👗' : industry.id === 'retail' ? '✈️' : industry.id === 'beauty' ? '💄' : industry.id === 'fitness' ? '🏋️' : industry.id === 'jewelry' ? '💎' : '🛋️'}</span>
+                                        <span className="shrink-0">{industry.id === 'catering' ? '☕' : industry.id === 'fashion' ? '👗' : industry.id === 'retail' ? '✈️' : industry.id === 'beauty' ? '💄' : industry.id === 'hotel' ? '🏨' : industry.id === 'creator' ? '📱' : '🏢'}</span>
                                         <span className="truncate">{merchantName || `${industry.name}极智店`}</span>
                                         <span className="bg-red-500 text-white font-mono text-[7px] px-1 py-0.5 rounded ml-1 animate-pulse shrink-0">AI店</span>
                                       </span>

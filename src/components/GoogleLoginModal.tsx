@@ -203,8 +203,8 @@ export default function GoogleLoginModal({ userEmail = 'guest@gmail.com', onSucc
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 email: result.user.email,
-                industryId: localStorage.getItem('onboarding_industry_id') || 'catering',
-                operatingMode: localStorage.getItem('onboarding_operating_mode') || 'full_auto',
+                industryId: localStorage.getItem('onboarding_industry_id') || '',
+                operatingMode: localStorage.getItem('onboarding_operating_mode') || '',
                 planId: 'pro'
               })
             });

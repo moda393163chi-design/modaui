@@ -85,10 +85,9 @@ export default function UnifiedArchitectureBridge({ isOpen, onClose, currentStep
         { name: '服装行业团队 (时装/快反)', action: { step: 'AI_TEAMS', industry: 'fashion' } },
         { name: '餐饮行业团队 (外卖/堂食)', action: { step: 'AI_TEAMS', industry: 'catering' } },
         { name: '零售百货团队 (选品/直通车)', action: { step: 'AI_TEAMS', industry: 'retail' } },
-        { name: '美业丽人团队 (拓客/耗材)', action: { step: 'AI_TEAMS', industry: 'beauty' } },
-        { name: '健身轻食团队 (社群/教练)', action: { step: 'AI_TEAMS', industry: 'fitness' } },
-        { name: '高级珠宝团队 (高奢/保价)', action: { step: 'AI_TEAMS', industry: 'jewelry' } },
-        { name: '家居装潢团队 (软装/定制)', action: { step: 'AI_TEAMS', industry: 'home' } }
+        { name: '美业丽人团队 (拓客/预约)', action: { step: 'AI_TEAMS', industry: 'beauty' } },
+        { name: '酒店民宿团队 (房态/收益)', action: { step: 'AI_TEAMS', industry: 'hotel' } },
+        { name: '电商网红团队 (选品/直播)', action: { step: 'AI_TEAMS', industry: 'creator' } }
       ]
     },
     {
