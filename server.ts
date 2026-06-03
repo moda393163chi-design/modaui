@@ -9,6 +9,8 @@ import { Payment, middleware as wechatMiddleware } from "wechat-pay";
 import * as paypalCheckoutServerSDK from "@paypal/checkout-server-sdk";
 import { PayPalService } from "./src/services/payment-paypal";
 import { ModaDB } from "./src/server/db";
+import { VALID_INDUSTRIES } from "./src/services/industryGuard";
+import { TEMPLATES } from "./src/services/templatesRegistry";
 import { generateWithOpenAI } from "./src/services/openai.service";
 import { createLangChainAgent } from "./src/services/langchain.service";
 import { generateWithOllama } from "./src/services/ollama.service";
@@ -74,6 +76,26 @@ function getStripe(): Stripe | null {
     });
   }
   return stripeClient;
+}
+
+function normalizeTenantId(value: any): string {
+  if (typeof value !== 'string') return '';
+  return value.trim();
+}
+
+function requireTenantId(value: any, context = 'request'): string {
+  const tenantId = normalizeTenantId(value);
+  if (!tenantId) {
+    throw new Error(`Missing tenantId for ${context}`);
+  }
+  return tenantId;
+}
+
+function requireStoreId(value: any, context = 'request'): string {
+  if (!value || typeof value !== 'string' || !value.trim()) {
+    throw new Error(`Missing storeId for ${context}`);
+  }
+  return value.trim();
 }
 
 async function startServer() {
@@ -254,173 +276,217 @@ async function startServer() {
 
   app.post("/api/tenants/initialize", async (req, res) => {
     try {
-      const { email, companyName, industryId, strategyId, strategyName, strategyDesc } = req.body;
-      if (!email || !companyName || !industryId) {
-        res.status(400).json({ success: false, error: "Missing email, companyName, or industryId" });
+      const {
+        email,
+        companyName,
+        industryId,
+        templateId,
+        tenantId,
+        companyId,
+        storeId,
+        strategyId,
+        strategyName,
+        strategyDesc
+      } = req.body;
+
+      const missingFields = [
+        { key: 'email', value: email },
+        { key: 'companyName', value: companyName },
+        { key: 'industryId', value: industryId },
+        { key: 'templateId', value: templateId },
+        { key: 'tenantId', value: tenantId },
+        { key: 'companyId', value: companyId },
+        { key: 'storeId', value: storeId }
+      ].filter(item => !item.value || String(item.value).trim() === '');
+
+      if (missingFields.length > 0) {
+        res.status(400).json({
+          success: false,
+          error: `Missing required field(s): ${missingFields.map(item => item.key).join(', ')}`
+        });
         return;
       }
 
-      const tenantId = email.replace(/[^a-zA-Z0-9]/g, '_');
+      const normalizedIndustryId = String(industryId).trim();
+      const normalizedTemplateId = String(templateId).trim();
+      const normalizedTenantId = String(tenantId).trim();
+      const normalizedCompanyId = String(companyId).trim();
+      const normalizedStoreId = String(storeId).trim();
+      const normalizedEmail = String(email).trim();
+      const normalizedCompanyName = String(companyName).trim();
+
+      if (!VALID_INDUSTRIES.includes(normalizedIndustryId as any)) {
+        res.status(400).json({ success: false, error: `Invalid industryId: ${normalizedIndustryId}` });
+        return;
+      }
+
+      const templateMeta = TEMPLATES.find((template) => template.id === normalizedTemplateId);
+      if (!templateMeta) {
+        res.status(400).json({ success: false, error: `Invalid templateId: ${normalizedTemplateId}` });
+        return;
+      }
+      if (templateMeta.industry !== normalizedIndustryId) {
+        res.status(400).json({
+          success: false,
+          error: `Template ${normalizedTemplateId} does not belong to industry ${normalizedIndustryId}.`
+        });
+        return;
+      }
+
       const db = ModaDB.read();
 
-      // 1. Create/Update Merchant
-      const merchantIdx = db.merchants.findIndex(m => m.id === tenantId);
+      const merchantIdx = db.merchants.findIndex((m) => m.id === normalizedTenantId);
       const newMerchant = {
-        id: tenantId,
-        name: companyName,
-        ownerId: email,
-        status: "active" as const,
-        billingPlan: "free" as const,
+        id: normalizedTenantId,
+        name: normalizedCompanyName,
+        ownerId: normalizedEmail,
+        status: 'active' as const,
+        billingPlan: 'free' as const,
+        companyId: normalizedCompanyId,
         createdAt: new Date().toISOString()
-      };
+      } as any;
       if (merchantIdx > -1) {
         db.merchants[merchantIdx] = newMerchant;
       } else {
         db.merchants.push(newMerchant);
       }
 
-      // 2. Create/Update Store
-      const storeId = `sto_${tenantId}`;
-      const storeIdx = db.stores.findIndex(s => s.id === storeId);
+      const storeIdx = db.stores.findIndex((s) => s.id === normalizedStoreId);
       const newStore = {
-        id: storeId,
-        merchantId: tenantId,
-        name: companyName,
-        domain: `${tenantId}.modaui.com`,
+        id: normalizedStoreId,
+        merchantId: normalizedTenantId,
+        companyId: normalizedCompanyId,
+        name: normalizedCompanyName,
+        domain: `${normalizedTenantId}.modaui.com`,
         branding: {
-          logo: "📦",
-          colorTheme: "classic" as const,
-          bannerText: `欢迎光临 ${companyName} 智体店样板！`
+          logo: '📦',
+          colorTheme: 'classic' as const,
+          bannerText: `欢迎光临 ${normalizedCompanyName} 智体店样板！`
         },
         createdAt: new Date().toISOString()
-      };
+      } as any;
       if (storeIdx > -1) {
         db.stores[storeIdx] = newStore;
       } else {
         db.stores.push(newStore);
       }
 
-      // 3. Clear and create default products scoped to this tenant-store
-      db.products = db.products.filter(p => p.storeId !== storeId);
+      db.products = db.products.filter((p) => p.storeId !== normalizedStoreId);
       
       const productsTemplates: Record<string, Array<{name: string, price: number, inventory: number, image: string, category: string, desc: string}>> = {
         fashion: [
-          { name: "复古重工连帽卫衣 (Aria 联名定制系列)", price: 199, inventory: 150, image: "🧥", category: "外套大衣", desc: "精选高质摇粒绒保暖面。快反供应链极速打样出货。" },
-          { name: "经典百搭翻盖帆布包 (Barton 选品推荐)", price: 149, inventory: 180, image: "👜", category: "美学配饰", desc: "加厚加密牛津帆布。多功能内置网兜与防水涂层材质。" },
-          { name: "高腰褶皱新中式高定牛仔裙 (Aria 剪裁设计)", price: 299, inventory: 90, image: "👗", category: "裙装系列", desc: "复古提花深色牛仔布料。高腰显瘦完美比例版型。" }
+          { name: '复古工装连帽卫衣', price: 199, inventory: 150, image: '🧥', category: '款式', desc: '精选高质摇粒绒保暖面。' },
+          { name: '经典翻盖帆布包', price: 149, inventory: 180, image: '👜', category: '颜色', desc: '加厚牛津帆布，多功能防水。' },
+          { name: '高腰褶皱牛仔裙', price: 299, inventory: 90, image: '👗', category: '面料', desc: '深色牛仔布，高腰显瘦。' }
         ],
         catering: [
-          { name: "特色秘制宫保鸡丁双人份大套餐 (Kai 推荐)", price: 28, inventory: 100, image: "🍱", category: "智造招牌", desc: "热度数据优选菜单，低物耗供应链极速配送。" },
-          { name: "灌汤黑猪肉手工水饺 (十二只装)", price: 18, inventory: 250, image: "🥟", category: "精品小点", desc: "纯手工擀制，肉馅紧实多汁不柴。" },
-          { name: "招牌沁心冷泡高山乌龙茶", price: 10, inventory: 400, image: "🍹", category: "爽口特饮", desc: "去热解腻搭档，低温长续保留甘甜天然茶酚。" }
-        ],
-        retail: [
-          { name: "磨砂吸饱高硅玻璃马克杯 (Vara 特荐书签款)", price: 29, inventory: 200, image: "🥛", category: "生活家居", desc: "防烫无毒环保材质。设计师原案定制防指纹漆面。" },
-          { name: "三层隔热高密封防漏竹纤维饭盒", price: 49, inventory: 150, image: "🍱", category: "时尚厨具", desc: "天然竹原纤维降解压制。带提手轻便易携可微波。" },
-          { name: "极低空噪超纯声波电动牙刷 (Dax 跟单选型)", price: 129, inventory: 70, image: "🪥", category: "智体个护", desc: "超声磁悬浮马达，精选五挡护理记忆，续航超百天。" }
+          { name: '秘制宫保鸡丁', price: 28, inventory: 100, image: '🍱', category: '菜品', desc: '热度数据优选菜单。' },
+          { name: '香辣手工水饺', price: 18, inventory: 250, image: '🥟', category: '口味', desc: '纯手工擀制，肉馅多汁。' },
+          { name: '冷泡高山乌龙茶', price: 10, inventory: 400, image: '🍹', category: '外卖', desc: '清甜解腻，适合配送。' }
         ],
         beauty: [
-          { name: "真花萃取臻美大马士革玫瑰精油 (Yara 概念版)", price: 198, inventory: 80, image: "🧪", category: "奢宠护肤", desc: "滴滴尊贵精纯原液。强效保湿抗氧化。Iris深度私域高复购单品。" },
-          { name: "免按泡沫温和氨基酸净澈面膜慕斯", price: 89, inventory: 120, image: "🧴", category: "温和洁面", desc: "双重氨基酸表面活性成分。超微细泡低残留不敏感紧绷。" },
-          { name: "医用冻干重组胶原蛋白润养补水面膜 (5贴)", price: 59, inventory: 250, image: "🎭", category: "舒缓保湿", desc: "二类器械安全标准。修护医美术后泛红干燥，敏感退火。" }
+          { name: '玫瑰精油护肤套装', price: 198, inventory: 80, image: '🧪', category: '项目', desc: '高保湿抗氧化配方。' },
+          { name: '医美胶原补水面膜', price: 59, inventory: 250, image: '🎭', category: '套餐', desc: '修护术后泛红干燥。' },
+          { name: '私人技师SPA预约', price: 299, inventory: 40, image: '💆', category: '预约', desc: '专业技师一对一服务。' }
         ],
-        hotel: [
-          { name: "大堂定制沉敛高雅小众木质扩香 (Noel 迎客香)", price: 120, inventory: 100, image: "🕯️", category: "特选周边", desc: "天然植萃精油。经典雪松与无花果清香，安抚差旅倦惫。" },
-          { name: "释压支撑高弹抗菌防螨天然乳胶枕", price: 189, inventory: 40, image: "🛏️", category: "舒适酣眠", desc: "高密度蜂窝双气孔，承托颈部自然弯曲，深睡舒压。" },
-          { name: "高克重精梳大圈绒亲肤速干全棉浴袍", price: 299, inventory: 30, image: "👘", category: "客房体验", desc: "特长绒全棉多圈编织。丝滑柔软，绝佳吸水保暖性能。" }
+        fitness: [
+          { name: '私教课程包', price: 399, inventory: 60, image: '🏋️', category: '课程', desc: '定制训练计划，燃脂塑形。' },
+          { name: '会员卡半年卡', price: 980, inventory: 120, image: '🎫', category: '会员卡', desc: '畅享场地与团课权益。' },
+          { name: '教练在线预约', price: 129, inventory: 80, image: '🤸', category: '预约', desc: '支持私教和小团专属课。' }
         ],
-        creator: [
-          { name: "大主播评测力捧高纤低卡爆料威化饼", price: 39, inventory: 800, image: "🍪", category: "直播爆款", desc: "Sylvia运营推荐无蔗糖高饱腹代餐卡零食。" },
-          { name: "万能RGB自拍补光大光环美颜美妆灯", price: 149, inventory: 120, image: "💡", category: "主播数码", desc: "多折叠收缩高度，无缝全光谱，Kellan直播话术搭配神器。" },
-          { name: "高清数字电磁动圈降噪直播领夹麦克风", price: 399, inventory: 50, image: "🎙️", category: "专业声卡", desc: "智能防喷防爆声。一拖二高速发射续航。Mercedes剪辑首推。" }
+        jewelry: [
+          { name: '18K 金钻戒', price: 1999, inventory: 20, image: '💍', category: '款式', desc: '高级切工钻石，经典设计。' },
+          { name: 'S925 珍珠项链', price: 799, inventory: 35, image: '📿', category: '材质', desc: '精选珍珠与纯银镀金。' },
+          { name: '定制钻石对戒', price: 2899, inventory: 12, image: '💎', category: '证书', desc: '含GIA证书，支持刻字。' }
+        ],
+        home: [
+          { name: '北欧风沙发', price: 1299, inventory: 40, image: '🛋️', category: '风格', desc: '极简设计，舒适面料。' },
+          { name: '橡木餐桌', price: 1899, inventory: 20, image: '🍽️', category: '材料', desc: '原木实心，耐磨防水。' },
+          { name: '定制收纳柜', price: 799, inventory: 60, image: '🪑', category: '尺寸', desc: '支持多种规格定制。' }
         ]
       };
 
-      const validIndustryIds = ['fashion', 'catering', 'retail', 'beauty', 'hotel', 'creator'];
-      if (!validIndustryIds.includes(industryId)) {
-        res.status(400).json({ success: false, error: `Invalid industryId: ${industryId}`, message: '行业类型无效，请仅传入已支持的六大行业。' });
-        return;
-      }
-
-      const matchedSPUList = productsTemplates[industryId];
-      matchedSPUList.forEach(item => {
-          id: `prod_${Math.random().toString(36).slice(2, 11)}`,
-          storeId: storeId,
+      const createdProducts: any[] = [];
+      (productsTemplates[normalizedIndustryId] || []).forEach((item) => {
+        const product = {
+          id: `prod_${normalizedIndustryId}_${Math.random().toString(36).slice(2, 11)}`,
+          storeId: normalizedStoreId,
           name: item.name,
           category: item.category,
-          price: Number(item.price),
-          inventory: Number(item.inventory),
-          sku: `SKU-${industryId.toUpperCase()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`,
+          price: item.price,
+          inventory: item.inventory,
+          sku: `SKU-${normalizedIndustryId.toUpperCase()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`,
           variant: {},
           images: [item.image],
           createdAt: new Date().toISOString()
-        });
+        };
+        db.products.push(product);
+        createdProducts.push(product);
       });
 
       // 4. Create/Update AI Team and Employees
-      db.ai_teams = db.ai_teams.filter(t => t.merchantId !== tenantId);
-      const teamId = `team_${tenantId}`;
+      db.ai_teams = db.ai_teams.filter((t) => t.merchantId !== normalizedTenantId);
+      const teamId = `team_${normalizedTenantId}`;
       const newAITeam = {
         id: teamId,
-        merchantId: tenantId,
-        name: `${companyName}专家智体委员会`,
+        merchantId: normalizedTenantId,
+        name: `${normalizedCompanyName} AI 团队`, 
         createdAt: new Date().toISOString()
       };
       db.ai_teams.push(newAITeam);
 
-      // Clear old agents of this tenant's team
-      db.ai_agents = db.ai_agents.filter(a => a.teamId !== teamId);
+      db.ai_agents = db.ai_agents.filter((a) => a.teamId !== teamId);
 
-      const rolesTemplates: Record<string, Array<{name: string, role: string, desc: string}>> = {
+      const rolesTemplates: Record<string, Array<{ name: string; role: string; desc: string }>> = {
         fashion: [
-          { name: "Aria", role: "AI设计师", desc: "监控最新抖音/小红书潮流红线，负责策划线上微店陈列、海报文案和穿搭海报视觉。" },
-          { name: "Barton", role: "AI选品经理", desc: "分析欧美大牌及KOL穿搭高频买点，自动优化本微店SPU多规格上新，确保转化率。" },
-          { name: "Daphne", role: "AI营销经理", desc: "生成小红书/微淘复古种草笔记，规划广告直通车每日竞价出价及裂变优惠券预算分配。" },
-          { name: "Cyrus", role: "AI运营经理", desc: "跟踪发货进销存状态，一键自动打单顺丰并安排揽收，拦截退款纠纷和退换货安抚。" }
+          { name: 'Aria', role: 'AI设计师', desc: '负责服装橱窗/上新/选品视觉策略。' },
+          { name: 'Barton', role: 'AI选品经理', desc: '分析趋势与尺码配置，推荐爆款供应组合。' },
+          { name: 'Daphne', role: 'AI营销经理', desc: '生成品牌宣传与社交种草文案。' },
+          { name: 'Cyrus', role: 'AI运营经理', desc: '监控库存、补货与售后运营。' }
         ],
         catering: [
-          { name: "Kai", role: "AI外卖经理", desc: "主导外卖平台的满减、配送费及神券折扣梯度，极速配置下午茶推广大图海报。" },
-          { name: "Ren", role: "AI大堂经理", desc: "专研新品口味。根据城市物耗、包装溢价快速给出新品提价与招牌搭配方案。" },
-          { name: "Soren", role: "AI仓库经理", desc: "极智比对农品批发价，按日核动肉菜周转红线，自动汇总明日食材物耗进库采购单。" },
-          { name: "Lulu", role: "AI运营经理", desc: "对接物流跑腿，处理差评、餐损破洒极速垫付。汇总每日美团流水并对账。" }
-        ],
-        retail: [
-          { name: "Vara", role: "AI选品经理", desc: "选定亚马逊热榜飙升百货。对比国内拼多多/1688等高溢价渠道，优化起价及保价险配置。" },
-          { name: "Dax", role: "AI库存经理", desc: "对接代加工厂，自动化检索国内货品拼集拼仓跟踪，跟单并警示揽派延误。" },
-          { name: "Nova", role: "AI营销经理", desc: "拟定百日精推首发单。输出高转化引引流直通车方案，优化每日竞价ROI。" },
-          { name: "Tate", role: "AI运营经理", desc: "闲鱼/微店铺货。合并日出单入账，友好协商物流损坏先行核退等争夺安抚。" }
+          { name: 'Kai', role: 'AI菜品经理', desc: '设计菜单和味型组合，优化配送打包。' },
+          { name: 'Luna', role: 'AI外卖经理', desc: '调度外卖渠道、促销与配送策略。' },
+          { name: 'Soren', role: 'AI营销经理', desc: '构建餐饮品牌传播与推广活动。' },
+          { name: 'Lulu', role: 'AI运营经理', desc: '统计销量、菜品周转与客户评价。' }
         ],
         beauty: [
-          { name: "Yara", role: "AI产品经理", desc: "研发特色美发/面膜耗材。草拟产品高颜值包装海报，并过滤安全合规文案。" },
-          { name: "Iris", role: "AI客户经理", desc: "策划节日轻奢SPA充值送返项目。监控年卡到店周期，自动给核心VIP发送问候。" },
-          { name: "Sage", role: "AI营销经理", desc: "批量达人测样分包建联。输出千粉美睫试用小红书图文文案，快速引流拓客。" },
-          { name: "Cleo", role: "AI预约经理", desc: "管理面部护理及预约时段。动态进行时空差错峰引客，并在客户请假时极速重安排。" }
+          { name: 'Yara', role: 'AI产品顾问', desc: '打造美容项目与护理套餐组合。' },
+          { name: 'Iris', role: 'AI会员经理', desc: '设计会员复购和预约服务体系。' },
+          { name: 'Sage', role: 'AI营销经理', desc: '撰写医美/SPA营销文案与活动方案。' },
+          { name: 'Cleo', role: 'AI运营经理', desc: '管理预约排班与顾客服务体验。' }
         ],
-        hotel: [
-          { name: "Noel", role: "AI前台经理", desc: "接待入住。提供微信一键取房及智能门锁、行李快递、同城美食安心导览建议。" },
-          { name: "Pace", role: "AI客房经理", desc: "管理房间打扫并一键派发保洁工单。核定香香/浴巾采购及季度损耗周期。" },
-          { name: "Kira", role: "AI收益经理", desc: "跟踪节假日溢价。分析竞争房价、天气与尾房入座比例，执行夜间动态打折甩干。" },
-          { name: "Bella", role: "AI运营经理", desc: "全渠道OTA日历自动抗冲突合并。高转化话术秒回住客精美多图高分评语。" }
+        fitness: [
+          { name: 'Milo', role: 'AI课程顾问', desc: '制定课程表与训练计划。' },
+          { name: 'Nova', role: 'AI会员经理', desc: '管理会员卡与续费策略。' },
+          { name: 'Rhea', role: 'AI营销经理', desc: '策划健身品牌推广与课程卖点。' },
+          { name: 'Zane', role: 'AI运营经理', desc: '监控课时利用率与教练排班。' }
         ],
-        creator: [
-          { name: "Giles", role: "AI选品经理", desc: "多平台佣金分成高物色。分析今日爆带品类大盘。策划限时拼买低门槛策略。" },
-          { name: "Mercedes", role: "AI内容经理", desc: "设计直播间15s快速场场脚本。撰写吃货系列引流量笔记文案，最大化吸睛。" },
-          { name: "Kellan", role: "AI直播经理", desc: "生成大促爆憋话术、高光高频滚动。调节直播节奏与弹幕互动，推高场观粘度。" },
-          { name: "Sylvia", role: "AI运营经理", desc: "高精度GMV分成净利对账。跟踪货品派发反馈。买家物流丢件纠纷主动降级赔付。" }
+        jewelry: [
+          { name: 'Luna', role: 'AI设计师', desc: '设计珠宝款式与钻石参数组合。' },
+          { name: 'Orion', role: 'AI采购经理', desc: '优化材质和钻石采购成本。' },
+          { name: 'Astra', role: 'AI营销经理', desc: '撰写高端珠宝品牌故事与成交话术。' },
+          { name: 'Vera', role: 'AI运营经理', desc: '管理订单履约与证书调配。' }
+        ],
+        home: [
+          { name: 'Finn', role: 'AI选品顾问', desc: '推荐家居风格与定制材料。' },
+          { name: 'June', role: 'AI采购经理', desc: '协调供应链、材料与尺寸规格。' },
+          { name: 'Maya', role: 'AI营销经理', desc: '输出家居陈列与软装推广方案。' },
+          { name: 'Noah', role: 'AI运营经理', desc: '监控交付、定制工期与客户反馈。' }
         ]
       };
 
-      const matchedRoster = rolesTemplates[industryId];
+      const matchedRoster = rolesTemplates[normalizedIndustryId] || [];
       const createdAgents: any[] = [];
-      matchedRoster.forEach(emp => {
+      matchedRoster.forEach((emp) => {
         const agt = {
-          id: `agt_${tenantId}_${emp.name}`,
-          teamId: teamId,
+          id: `agt_${normalizedTenantId}_${emp.name}`,
+          teamId,
           name: emp.name,
-          role: `${emp.role} ${emp.name}` as any,
-          systemPrompt: `你已受雇为 ${companyName} 的专属【${emp.role}】。岗位职责：${emp.desc}\n\n当前团队执行的运营策略是：${strategyName}（${strategyDesc}）。请极力贯彻执行，让商铺业绩持续攀升。`,
+          role: emp.role,
+          systemPrompt: `你已受雇为 ${normalizedCompanyName} 的专属【${emp.role}】。岗位职责：${emp.desc}。当前策略是：${strategyName}。`,
           status: 'idle' as const,
-          memoryContext: [`于 ${new Date().toISOString()} 系统安全初始化就绪。岗位口号与授权契约已部署完毕。`],
+          memoryContext: [`初始化完成，行业：${normalizedIndustryId}，模板：${normalizedTemplateId}。`],
           createdAt: new Date().toISOString()
         };
         db.ai_agents.push(agt);
@@ -428,27 +494,27 @@ async function startServer() {
       });
 
       // 5. Clear and create default Knowledge Base chunks
-      db.kb_chunks = db.kb_chunks.filter(c => c.merchantId !== tenantId);
+      db.kb_chunks = db.kb_chunks.filter((c) => c.merchantId !== normalizedTenantId);
       const defaultKBChks = [
         {
-          id: `chk_${tenantId}_1`,
-          title: `${companyName} 商业愿景与经营守则`,
-          content: `本企业名为：${companyName}。\n创始人及企业主：${email}。\n行业定位与特种行业背景：${industryId}。\n公司战略策略定位是：${strategyName}（${strategyDesc}）。\n所有智体员工在向顾客提供解答或协助管理店铺时，必须以此策略为指导原则，遵守服务纪律。`,
-          category: "企业政策",
+          id: `chk_${normalizedTenantId}_1`,
+          title: `${normalizedCompanyName} 商业愿景与经营守则`,
+          content: `本企业名为：${normalizedCompanyName}。\n创始人及企业主：${email}。\n行业定位与特种行业背景：${normalizedIndustryId}。\n公司战略策略定位是：${strategyName}（${strategyDesc}）。\n所有智体员工在向顾客提供解答或协助管理店铺时，必须以此策略为指导原则，遵守服务纪律。`,
+          category: '企业政策',
           tokenCount: 220
         },
         {
-          id: `chk_${tenantId}_2`,
-          title: "顺丰速运一件代发极速分发履约标准",
-          content: `公司为保障配送时效已与《顺丰速运》达成官方特惠寄递协议。\n前台店面所有买单订单，系统运营主管（如Cyrus/Lulu等）将无缝执行打包及一键传单顺丰派发航空专件。\n若出现揽收超时或揽派延误，平台将启动首单免首重和 ¥15 延时关怀专属优惠。`,
-          category: "物流规范",
+          id: `chk_${normalizedTenantId}_2`,
+          title: '顺丰速运一件代发极速分发履约标准',
+          content: `公司为保障配送时效已与《顺丰速运》达成官方特惠寄递协议。\n前台店面所有买单订单，系统运营主管将无缝执行打包与一键派单顺丰。\n若出现揽收超时或揽派延误，平台将启动延时关怀专属优惠。`,
+          category: '物流规范',
           tokenCount: 180
         },
         {
-          id: `chk_${tenantId}_3`,
-          title: "顾客退款退货阻拦、安抚与客情公关条例",
-          content: `对于前台申请退款的顾客，客服智体员工须执行主动安抚和快速响应。\n如出现质检争议或错发：首单新客直接发起 ¥10 折扣福利补偿并建议保退，或直接免退货仅极速原件补发。\n凡遭遇不合理投诉，系统主管均启动客情调停，快速纠葛，保留品牌口碑。`,
-          category: "客户服务",
+          id: `chk_${normalizedTenantId}_3`,
+          title: '顾客退款退货阻拦、安抚与客情公关条例',
+          content: `对于前台申请退款的顾客，客服智体员工须执行主动安抚和快速响应。\n如出现质检争议或错发：首单新客可直接发起折扣福利补偿或原件补发。\n凡遭遇不合理投诉，系统主管均启动客情调停，维护品牌口碑。`,
+          category: '客户服务',
           tokenCount: 210
         }
       ];
@@ -456,10 +522,10 @@ async function startServer() {
       for (const chk of defaultKBChks) {
         let vector: number[] | null = null;
         try {
-          if (process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY !== "MY_GEMINI_API_KEY") {
+          if (process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY !== 'MY_GEMINI_API_KEY') {
             const api = getGeminiClient();
             const embedRes = await api.models.embedContent({
-              model: "gemini-embedding-2-preview",
+              model: 'gemini-embedding-2-preview',
               contents: [chk.content]
             });
             vector = embedRes.embeddings?.[0]?.values || (embedRes as any).embedding?.values || null;
@@ -468,7 +534,7 @@ async function startServer() {
 
         db.kb_chunks.push({
           id: chk.id,
-          merchantId: tenantId,
+          merchantId: normalizedTenantId,
           title: chk.title,
           content: chk.content,
           tokenCount: chk.tokenCount,
@@ -478,20 +544,20 @@ async function startServer() {
       }
 
       // 6. Create partial tenant info for quota managing
-      db.tenants = db.tenants.filter(t => t.id !== tenantId);
+      db.tenants = db.tenants.filter((t) => t.id !== normalizedTenantId);
       db.tenants.push({
-        id: tenantId,
+        id: normalizedTenantId,
         quotaLimit: 3000,
         quotaUsed: 0,
-        billingStatus: "paid"
+        billingStatus: 'paid'
       });
 
       // 7. Push a simulated initial sales and finance report
-      db.finance = db.finance.filter(f => f.merchantId !== tenantId);
+      db.finance = db.finance.filter((f) => f.merchantId !== normalizedTenantId);
       db.finance.push({
         id: `FIN-${Math.floor(100000 + Math.random() * 900000)}`,
-        merchantId: tenantId,
-        type: "revenue",
+        merchantId: normalizedTenantId,
+        type: 'revenue',
         amount: 3200,
         description: "系统上线预热活动订单交易收益",
         createdAt: new Date().toISOString()
@@ -504,11 +570,11 @@ async function startServer() {
       // 9. Sync directly to live cloud Firestore if client is boot
       if (serverDb) {
         try {
-          const mDocRef = firestoreDoc(serverDb, "tenants", tenantId);
+          const mDocRef = firestoreDoc(serverDb, "tenants", normalizedTenantId);
           await firestoreSetDoc(mDocRef, {
-            id: tenantId,
-            name: companyName,
-            industryId,
+            id: normalizedTenantId,
+            name: normalizedCompanyName,
+            industryId: normalizedIndustryId,
             strategyId,
             strategyName,
             ownerEmail: email,
@@ -517,11 +583,11 @@ async function startServer() {
 
           // sync products to cloud
           for (const item of matchedSPUList) {
-            const pSlug = `prod_${tenantId}_${item.name.replace(/[^a-zA-Z0-9]/g, '_')}`;
+            const pSlug = `prod_${normalizedTenantId}_${item.name.replace(/[^a-zA-Z0-9]/g, '_')}`;
             const pDocRef = firestoreDoc(serverDb, "products", pSlug);
             await firestoreSetDoc(pDocRef, {
               id: pSlug,
-              storeId,
+              storeId: normalizedStoreId,
               name: item.name,
               category: item.category,
               price: item.price,
@@ -538,7 +604,7 @@ async function startServer() {
 
       res.status(200).json({
         success: true,
-        merchantId: tenantId,
+        merchantId: normalizedTenantId,
         merchant: newMerchant,
         store: newStore,
         message: "Successfully initialized tenant assets."
@@ -652,7 +718,7 @@ async function startServer() {
       const db = ModaDB.read();
       const newProd = {
         id: `prod_${Math.random().toString(36).slice(2, 11)}`,
-        storeId: storeId || "universal_store",
+        storeId: requireStoreId(storeId, 'product.create'),
         name,
         category: category || "General",
         price: Number(price),
@@ -741,11 +807,13 @@ async function startServer() {
       const db = ModaDB.read();
       const { orderId: providedOrderId } = req.body;
       const orderId = providedOrderId || `ORD-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}-${Math.floor(1000 + Math.random() * 9000)}`;
+      const activeStoreId = requireStoreId(storeId, 'order.create');
+      const activeMerchantId = requireTenantId(merchantId, 'order.create');
       const newOrder = {
         id: orderId,
         userId: userId || "guest_user",
-        storeId: storeId || "universal_store",
-        merchantId: merchantId || "default_tenant",
+        storeId: activeStoreId,
+        merchantId: activeMerchantId,
         items,
         totalPrice: Number(totalPrice),
         status: "pending" as const,
@@ -892,10 +960,12 @@ async function startServer() {
 
         // Add to finance records simultaneously
         const order = db.orders.find(o => o.id === orderId);
-        const mId = order ? order.merchantId : "default_tenant";
+        if (!order) {
+          throw new Error(`Order not found for payment simulation: ${orderId}`);
+        }
         db.finance.push({
           id: `FIN-${Math.floor(100000 + Math.random() * 900000)}`,
-          merchantId: mId,
+          merchantId: requireTenantId(order.merchantId, 'payment.simulation'),
           type: "revenue",
           amount: Number(amount),
           orderId,
@@ -945,10 +1015,13 @@ async function startServer() {
       });
 
       const order = db.orders.find(o => o.id === orderId);
-      const mId = order ? order.merchantId : "default_tenant";
+      if (!order) {
+        res.status(404).json({ success: false, error: `Order not found for Alipay callback: ${orderId}` });
+        return;
+      }
       db.finance.push({
         id: `FIN-${Math.floor(100000 + Math.random() * 900000)}`,
-        merchantId: mId,
+        merchantId: requireTenantId(order.merchantId, 'payment.alipay'),
         type: "revenue",
         amount: Number(amount),
         orderId,
@@ -1008,7 +1081,7 @@ async function startServer() {
             });
             db.finance.push({
               id: `FIN-${Math.floor(100000 + Math.random() * 900000)}`,
-              merchantId: order.merchantId || 'default_tenant',
+              merchantId: requireTenantId(order.merchantId, 'payment.wechat'),
               type: 'revenue',
               amount: Number(amount),
               orderId,
@@ -1357,7 +1430,8 @@ async function startServer() {
       // Attempt Firestore retrieval first
       if (serverDb) {
         try {
-          const colRef = firestoreCollection(serverDb, "tenants", tenantId || "default_tenant", "kb_chunks");
+          const activeTenantId = requireTenantId(tenantId, 'knowledge.rag.read');
+        const colRef = firestoreCollection(serverDb, "tenants", activeTenantId, "kb_chunks");
           const snap = await firestoreGetDocs(colRef);
           snap.forEach(docSnap => {
             const d = docSnap.data();
@@ -1403,7 +1477,7 @@ async function startServer() {
   // === 10. KNOWLEDGE BASE & EMBEDDING RAG APIS ===
   app.get("/api/knowledge", async (req, res) => {
     try {
-      const tenantId = String(req.query.tenantId || "default_tenant");
+      const tenantId = requireTenantId(req.query.tenantId, 'knowledge.fetch');
       let chunks: any[] = [];
       if (serverDb) {
         try {
@@ -1435,7 +1509,7 @@ async function startServer() {
         res.status(400).json({ success: false, error: "Missing title, content, or category." });
         return;
       }
-      const activeTenant = tenantId || "default_tenant";
+      const activeTenant = requireTenantId(tenantId, 'knowledge.add');
 
       // Compute embedding vector using Gemini real model
       let vector: number[] | null = null;
@@ -1489,7 +1563,7 @@ async function startServer() {
   app.delete("/api/knowledge/:id", async (req, res) => {
     try {
       const { id } = req.params;
-      const tenantId = String(req.query.tenantId || "default_tenant");
+      const tenantId = requireTenantId(req.query.tenantId, 'knowledge.delete');
       
       const db = ModaDB.read();
       db.kb_chunks = db.kb_chunks.filter(c => c.id !== id);
@@ -1513,7 +1587,7 @@ async function startServer() {
   // Fetch all pending and processed task logs
   app.get("/api/agents/tasks", async (req, res) => {
     try {
-      const tenantId = String(req.query.tenantId || "default_tenant");
+      const tenantId = requireTenantId(req.query.tenantId, 'agent.tasks.fetch');
       let tasks: any[] = [];
       if (serverDb) {
         try {
@@ -1546,7 +1620,7 @@ async function startServer() {
         res.status(400).json({ success: false, error: "Missing agentId or input message content." });
         return;
       }
-      const activeTenant = tenantId || "default_tenant";
+      const activeTenant = requireTenantId(tenantId, 'agent.execute');
       const db = ModaDB.read();
       const taskId = `task_${Math.random().toString(36).slice(2, 11)}`;
       
@@ -1673,7 +1747,7 @@ async function startServer() {
         return;
       }
 
-      const activeTenant = tenantId || "default_tenant";
+      const activeTenant = requireTenantId(tenantId, 'chat.execute');
 
       // System instruction template to give high-fidelity specialized role-playing behavior
       const systemInstruction = `你是一位高智商、极具智慧与实操执行力的数字员工（类似 Shopify Sidekick 智能伙伴）。
@@ -2155,7 +2229,7 @@ async function startServer() {
 
   app.get("/api/app-installations", (req, res) => {
     try {
-      const tenantId = String(req.query.tenantId || "default_tenant");
+      const tenantId = requireTenantId(req.query.tenantId, 'app.installations.fetch');
       const db = ModaDB.read();
       const installs = db.appInstallations.filter(i => i.merchantId === tenantId);
       res.json({ success: true, installations: installs });
@@ -2222,7 +2296,7 @@ async function startServer() {
   // === 17. MARKETING AUTOMATION WORKFLOWS & CAMPAIGNS API ===
   app.get("/api/campaigns", (req, res) => {
     try {
-      const tenantId = String(req.query.tenantId || "default_tenant");
+      const tenantId = requireTenantId(req.query.tenantId, 'campaigns.fetch');
       const db = ModaDB.read();
       const merchantCampaigns = db.campaigns.filter(c => c.merchantId === tenantId);
       res.json({ success: true, campaigns: merchantCampaigns });
@@ -2305,7 +2379,7 @@ async function startServer() {
   app.get("/api/campaigns/:campaignId/analytics", (req, res) => {
     try {
       const { campaignId } = req.params;
-      const tenantId = String(req.query.tenantId || "default_tenant");
+      const tenantId = requireTenantId(req.query.tenantId, 'campaign.analytics.fetch');
       const db = ModaDB.read();
       const campaign = db.campaigns.find(c => c.id === campaignId && c.merchantId === tenantId);
       if (!campaign) {
@@ -2321,7 +2395,7 @@ async function startServer() {
   // === 18. OMNI-CHANNEL STORE integrations (TikTok, xiaohongshu) ===
   app.get("/api/channels", (req, res) => {
     try {
-      const tenantId = String(req.query.tenantId || "default_tenant");
+      const tenantId = requireTenantId(req.query.tenantId, 'channels.fetch');
       const db = ModaDB.read();
       const currentChs = db.channelConnections.filter(c => c.merchantId === tenantId);
       res.json({ success: true, connections: currentChs });
@@ -2423,7 +2497,7 @@ async function startServer() {
   // === 19. RBAC TEAM PRIVILEGES & STAFF SYSTEM ===
   app.get("/api/roles", (req, res) => {
     try {
-      const tenantId = String(req.query.tenantId || "default_tenant");
+      const tenantId = requireTenantId(req.query.tenantId, 'roles.fetch');
       const db = ModaDB.read();
       const merchantRoles = db.roles.filter(r => r.merchantId === tenantId);
       res.json({ success: true, roles: merchantRoles.length > 0 ? merchantRoles : [
@@ -2461,7 +2535,7 @@ async function startServer() {
 
   app.get("/api/staff", (req, res) => {
     try {
-      const tenantId = String(req.query.tenantId || "default_tenant");
+      const tenantId = requireTenantId(req.query.tenantId, 'staff.fetch');
       const db = ModaDB.read();
       const list = db.staffPermissions.filter(s => s.merchantId === tenantId);
       res.json({ success: true, staff: list.length > 0 ? list : [
@@ -2519,7 +2593,7 @@ async function startServer() {
   // === 20. CUSTOM THEME DESIGNER ENGINE ===
   app.get("/api/themes", (req, res) => {
     try {
-      const tenantId = String(req.query.tenantId || "default_tenant");
+      const tenantId = requireTenantId(req.query.tenantId, 'themes.fetch');
       const db = ModaDB.read();
       const list = db.themes.filter(t => t.merchantId === tenantId);
       res.json({ success: true, themes: list.length > 0 ? list : [
@@ -2589,7 +2663,7 @@ async function startServer() {
   // === 21. CUSTOM WEBHOOKS & API CREDENTIALS GATEWAY ===
   app.get("/api/webhooks", (req, res) => {
     try {
-      const tenantId = String(req.query.tenantId || "default_tenant");
+      const tenantId = requireTenantId(req.query.tenantId, 'webhooks.fetch');
       const db = ModaDB.read();
       const currentList = db.webhookRegistrations.filter(w => w.merchantId === tenantId);
       res.json({ success: true, webhooks: currentList });
@@ -2626,7 +2700,7 @@ async function startServer() {
   app.delete("/api/webhooks/:webhookId", (req, res) => {
     try {
       const { webhookId } = req.params;
-      const tenantId = String(req.query.tenantId || "default_tenant");
+      const tenantId = requireTenantId(req.query.tenantId, 'webhooks.delete');
       const db = ModaDB.read();
       db.webhookRegistrations = db.webhookRegistrations.filter(w => !(w.id === webhookId && w.merchantId === tenantId));
       ModaDB.write(db);
@@ -2638,7 +2712,7 @@ async function startServer() {
 
   app.get("/api/settings/api-keys", (req, res) => {
     try {
-      const tenantId = String(req.query.tenantId || "default_tenant");
+      const tenantId = requireTenantId(req.query.tenantId, 'api-keys.fetch');
       const db = ModaDB.read();
       const keys = db.apiKeys.filter(k => k.merchantId === tenantId);
       res.json({ success: true, keys });
@@ -2675,7 +2749,7 @@ async function startServer() {
   app.delete("/api/settings/api-keys/:keyId", (req, res) => {
     try {
       const { keyId } = req.params;
-      const tenantId = String(req.query.tenantId || "default_tenant");
+      const tenantId = requireTenantId(req.query.tenantId, 'api-keys.revoke');
       const db = ModaDB.read();
       db.apiKeys = db.apiKeys.filter(k => !(k.id === keyId && k.merchantId === tenantId));
       ModaDB.write(db);

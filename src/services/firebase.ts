@@ -1,22 +1,24 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, Auth } from 'firebase/auth';
 import { getFirestore, Firestore } from 'firebase/firestore';
+import { getStorage, FirebaseStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import firebaseConfig from '../../firebase-applet-config.json';
 
 // Initialize Firebase app once
 let firebaseApp: any = null;
 let firebaseAuth: Auth | null = null;
 let firebaseDb: Firestore | null = null;
+let firebaseStorage: FirebaseStorage | null = null;
 
 // Singleton initialization function
 function initializeFirebase() {
   if (!firebaseApp) {
     firebaseApp = initializeApp(firebaseConfig);
     firebaseAuth = getAuth(firebaseApp);
-    // CRITICAL: The app will break without specifying the firestoreDatabaseId
     firebaseDb = getFirestore(firebaseApp, (firebaseConfig as any).firestoreDatabaseId);
+    firebaseStorage = getStorage(firebaseApp);
   }
-  return { firebaseApp, firebaseAuth, firebaseDb };
+  return { firebaseApp, firebaseAuth, firebaseDb, firebaseStorage };
 }
 
 // Lazy initialize on first access
@@ -34,11 +36,27 @@ export function getFirebaseDb() {
   return firebaseDb;
 }
 
+export function getFirebaseStorage() {
+  const { firebaseStorage } = initializeFirebase();
+  return firebaseStorage;
+}
+
 // For backward compatibility, export as direct references
 // but they will be lazy-initialized
 export const app = getFirebaseApp();
 export const auth = getFirebaseAuth();
 export const db = getFirebaseDb();
+export const storage = getFirebaseStorage();
+
+export async function uploadFileToStorage(path: string, file: Blob): Promise<string> {
+  const storage = getFirebaseStorage();
+  if (!storage) {
+    throw new Error('Firebase Storage 未正确初始化');
+  }
+  const fileRef = ref(storage, path);
+  await uploadBytes(fileRef, file);
+  return await getDownloadURL(fileRef);
+}
 
 // ============================================
 // Firebase Error Handling

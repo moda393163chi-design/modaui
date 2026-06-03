@@ -35,10 +35,14 @@ export default function KnowledgeBaseView({ onBackToLanding }: { onBackToLanding
   const [simProgress, setSimProgress] = useState(0);
 
   const userEmail = auth.currentUser?.email;
-  const tenantId = userEmail ? userEmail.replace(/[^a-zA-Z0-9]/g, '_') : 'default_tenant';
+  const tenantId = typeof window !== 'undefined' ? localStorage.getItem('preview_tenant_id') || '' : '';
 
   // 1. Fetch real synced KB Chunks from Firestore/Backend
   const fetchFiles = async () => {
+    if (!tenantId) {
+      console.warn('KnowledgeBaseView: missing tenantId, skip backend fetch.');
+      return;
+    }
     try {
       const res = await fetch(`/api/knowledge?tenantId=${tenantId}`);
       const data = await res.json();

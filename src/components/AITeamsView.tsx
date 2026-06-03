@@ -35,75 +35,75 @@ export default function AITeamsView({ onBackToLanding }: { onBackToLanding: () =
       tagline: '专注服装公司的设计、选品、营销与运营闭环。',
       color: 'from-sky-500/20 to-indigo-500/10 border-sky-500/30',
       roster: [
-        { role: 'AI设计师', name: 'Aria', emoji: '🎨', desc: '负责潮流款式设计、视觉陈列与新品搭配。', status: 'active', specialty: ['流行趋势提炼', '款式画稿生成', '线上视觉排版'], cognitiveWeight: 'GPT-4o / Gemini-2.0', promptsCount: 14 },
-        { role: 'AI选品经理', name: 'Barton', emoji: '🧵', desc: '负责样衣打版选品、成本测算与爆款监控。', status: 'active', specialty: ['热销款分析', '工厂拿货评估', 'SPU分类管理'], cognitiveWeight: 'Gemini 1.5 Pro', promptsCount: 8 },
-        { role: 'AI营销经理', name: 'Daphne', emoji: '📣', desc: '负责穿搭种草、社媒内容与投放策略。', status: 'active', specialty: ['小红书种草文案', '短视频脚本', '渠道投流优化'], cognitiveWeight: 'DeepSeek-V3', promptsCount: 22 },
-        { role: 'AI运营经理', name: 'Cyrus', emoji: '📈', desc: '负责库存分配、促销排期与售后运营。', status: 'active', specialty: ['库存调度', '活动排期', '售后引导'], cognitiveWeight: 'Claude 3.5 Sonnet', promptsCount: 19 }
+        { role: 'AI设计师', name: 'Aria', emoji: '🎨', desc: '负责潮流款式设计与视觉陈列。', status: 'active', specialty: ['款式设计', '视觉搭配', '面料建议'], cognitiveWeight: 'GPT-4o', promptsCount: 12 },
+        { role: 'AI采购经理', name: 'Barton', emoji: '🧵', desc: '负责供应链选品与成本控制。', status: 'active', specialty: ['供应商评估', '成本核算', 'SPU管理'], cognitiveWeight: 'Gemini 1.5', promptsCount: 9 },
+        { role: 'AI运营经理', name: 'Cyrus', emoji: '📈', desc: '负责库存、促销及售后运营策略。', status: 'active', specialty: ['库存调度', '活动策划', '售后优化'], cognitiveWeight: 'Claude', promptsCount: 10 },
+        { role: 'AI营销经理', name: 'Daphne', emoji: '📣', desc: '负责品牌推广与渠道投放。', status: 'active', specialty: ['社媒运营', '内容策划', '投放优化'], cognitiveWeight: 'DeepSeek', promptsCount: 14 }
       ]
     },
     {
       id: 'catering',
       name: '餐饮行业核心团队',
       emoji: '🍜',
-      tagline: '专注餐饮公司的外卖、堂食、供应与运营。',
+      tagline: '专注餐饮公司的外卖、堂食与供应链事务。',
       color: 'from-amber-500/20 to-orange-500/10 border-amber-500/30',
       roster: [
-        { role: 'AI外卖经理', name: 'Kai', emoji: '🛵', desc: '负责外卖转化、满减策略与配送节奏。', status: 'active', specialty: ['外卖券策划', '配送节奏优化', '平台活动运营'], cognitiveWeight: 'Gemini 2.0 Flash', promptsCount: 11 },
-        { role: 'AI大堂经理', name: 'Ren', emoji: '🍽️', desc: '负责堂食点单、菜品推荐与现场服务设计。', status: 'active', specialty: ['菜品推荐优化', '点单界面设计', '堂食布局配置'], cognitiveWeight: 'Gemini 1.5 Pro', promptsCount: 6 },
-        { role: 'AI仓库经理', name: 'Soren', emoji: '📦', desc: '负责食材采购、库存补货与物料周转。', status: 'active', specialty: ['食材成本核算', '库存红线告警', '物料供应调度'], cognitiveWeight: 'GPT-4o-mini', promptsCount: 15 },
-        { role: 'AI运营经理', name: 'Lulu', emoji: '📈', desc: '负责门店运营、财务结算与客户反馈闭环。', status: 'active', specialty: ['运营数据监控', '订单结算', '服务质量回收'], cognitiveWeight: 'DeepSeek-R1', promptsCount: 25 }
-      ]
-    },
-    {
-      id: 'retail',
-      name: '百货零售核心团队',
-      emoji: '🏪',
-      tagline: '专注百货零售的选品、库存、营销与运营。',
-      color: 'from-emerald-500/20 to-teal-500/10 border-emerald-500/30',
-      roster: [
-        { role: 'AI选品经理', name: 'Vara', emoji: '🎒', desc: '负责百货品类筛选与爆款结构分析。', status: 'active', specialty: ['品类筛选', '竞品价效分析', 'SKU组合设计'], cognitiveWeight: 'Gemini 2.0 Flash', promptsCount: 9 },
-        { role: 'AI库存经理', name: 'Dax', emoji: '📦', desc: '负责库存预警、补货策略与仓储分配。', status: 'active', specialty: ['库存波动分析', '补货计划', '仓储成本控制'], cognitiveWeight: 'Claude 3.5 Sonnet', promptsCount: 12 },
-        { role: 'AI营销经理', name: 'Nova', emoji: '📣', desc: '负责促销计划、直通车投放与社群运营。', status: 'active', specialty: ['直通车预算', '社群裂变', '大促文案'], cognitiveWeight: 'DeepSeek-V3', promptsCount: 21 },
-        { role: 'AI运营经理', name: 'Tate', emoji: '📈', desc: '负责订单履约、退换货与多渠道铺货。', status: 'active', specialty: ['订单履约', '退换货处理', '渠道同步'], cognitiveWeight: 'GPT-4o', promptsCount: 20 }
+        { role: 'AI菜单顾问', name: 'Kai', emoji: '🍽️', desc: '负责菜品规划、菜单组合与口味推荐。', status: 'active', specialty: ['菜品组合', '口味优化', '菜单定价'], cognitiveWeight: 'Gemini 2.0', promptsCount: 12 },
+        { role: 'AI采购经理', name: 'Soren', emoji: '📦', desc: '负责原料采购、供应链与成本控制。', status: 'active', specialty: ['食材采购', '成本控制', '物料调度'], cognitiveWeight: 'GPT-4o-mini', promptsCount: 11 },
+        { role: 'AI运营经理', name: 'Lulu', emoji: '📈', desc: '负责门店运营、配送与订单履约。', status: 'active', specialty: ['订单履约', '配送策略', '门店运营'], cognitiveWeight: 'DeepSeek', promptsCount: 13 },
+        { role: 'AI营销经理', name: 'Mia', emoji: '📣', desc: '负责外卖拉新与本地化营销。', status: 'active', specialty: ['外卖活动', '券策略', '本地推广'], cognitiveWeight: 'Claude', promptsCount: 10 }
       ]
     },
     {
       id: 'beauty',
       name: '美业核心团队',
       emoji: '💄',
-      tagline: '专注美业公司的产品、客户、营销与预约。',
+      tagline: '专注美容与美业的会员、预约与服务体验。',
       color: 'from-pink-500/20 to-rose-500/10 border-pink-500/30',
       roster: [
-        { role: 'AI产品经理', name: 'Yara', emoji: '🧴', desc: '负责美容产品设计、成分规划与项目化运营。', status: 'active', specialty: ['产品规划', '成分研究', '服务组合设计'], cognitiveWeight: 'GPT-4o', promptsCount: 10 },
-        { role: 'AI客户经理', name: 'Iris', emoji: '🤝', desc: '负责私域客户关系、会员留存与复购激活。', status: 'active', specialty: ['会员管理', '客户留存', '复购促活'], cognitiveWeight: 'Gemini 1.5 Pro', promptsCount: 7 },
-        { role: 'AI营销经理', name: 'Sage', emoji: '📣', desc: '负责推广活动、口碑种草与渠道引流。', status: 'active', specialty: ['本地推广', '私域话术', '种草文案'], cognitiveWeight: 'Claude 3.5 Sonnet', promptsCount: 16 },
-        { role: 'AI预约经理', name: 'Cleo', emoji: '📅', desc: '负责疗程预约、客流错峰与排班优化。', status: 'active', specialty: ['预约排班', '错峰调度', '到店转化'], cognitiveWeight: 'DeepSeek-R1', promptsCount: 18 }
+        { role: 'AI产品顾问', name: 'Yara', emoji: '🧴', desc: '负责产品线规划与成分建议。', status: 'active', specialty: ['产品设计', '成分研究', '项目化运营'], cognitiveWeight: 'GPT-4o', promptsCount: 10 },
+        { role: 'AI会员运营经理', name: 'Iris', emoji: '🤝', desc: '负责会员体系与私域运营。', status: 'active', specialty: ['会员成长', '复购激活', '私域运营'], cognitiveWeight: 'Gemini', promptsCount: 9 },
+        { role: 'AI运营经理', name: 'Cleo', emoji: '📅', desc: '负责预约、排班与到店体验。', status: 'active', specialty: ['预约管理', '排班优化', '到店转化'], cognitiveWeight: 'DeepSeek', promptsCount: 11 },
+        { role: 'AI营销经理', name: 'Sage', emoji: '📣', desc: '负责口碑与渠道广告投放。', status: 'active', specialty: ['本地推广', '种草文案', '渠道投放'], cognitiveWeight: 'Claude', promptsCount: 12 }
       ]
     },
     {
-      id: 'hotel',
-      name: '酒店民宿核心团队',
-      emoji: '🏨',
-      tagline: '专注酒店民宿的前台、客房、收益与运营。',
-      color: 'from-blue-500/20 to-sky-500/10 border-blue-500/30',
+      id: 'fitness',
+      name: '健身行业核心团队',
+      emoji: '🏋️‍♀️',
+      tagline: '专注课程、教练与会员体系的健身运营。',
+      color: 'from-indigo-500/20 to-sky-500/10 border-indigo-500/30',
       roster: [
-        { role: 'AI前台经理', name: 'Noel', emoji: '🛎️', desc: '负责房态管理、客户接待与预订问答。', status: 'active', specialty: ['房态同步', '预订确认', '客户礼宾'], cognitiveWeight: 'GPT-4o-mini', promptsCount: 12 },
-        { role: 'AI客房经理', name: 'Pace', emoji: '🧹', desc: '负责客房清洁调度、物料补货与入住准备。', status: 'active', specialty: ['保洁排程', '物料补给', '服务标准化'], cognitiveWeight: 'Claude 3.5 Sonnet', promptsCount: 13 },
-        { role: 'AI收益经理', name: 'Kira', emoji: '💸', desc: '负责动态定价、收益分析与渠道分配。', status: 'active', specialty: ['房价策略', '收益优化', '渠道排期'], cognitiveWeight: 'Gemini 1.5 Pro', promptsCount: 11 },
-        { role: 'AI运营经理', name: 'Bella', emoji: '📊', desc: '负责入住运营、客诉修复与订单监控。', status: 'active', specialty: ['入住协调', '客诉处理', '运营报表'], cognitiveWeight: 'DeepSeek-V3', promptsCount: 15 }
+        { role: 'AI课程顾问', name: 'Rey', emoji: '🧭', desc: '负责课程设计与教练协同。', status: 'active', specialty: ['课程编排', '教练匹配', '课程定价'], cognitiveWeight: 'GPT-4o', promptsCount: 10 },
+        { role: 'AI会员运营经理', name: 'Nia', emoji: '🎫', desc: '负责会员转化与留存策略。', status: 'active', specialty: ['会员激活', '留存策略', '权益设计'], cognitiveWeight: 'Gemini', promptsCount: 9 },
+        { role: 'AI运营经理', name: 'Cole', emoji: '📈', desc: '负责场馆运营與预约履约。', status: 'active', specialty: ['场馆排期', '预约管理', '课程履约'], cognitiveWeight: 'Claude', promptsCount: 11 },
+        { role: 'AI营销经理', name: 'Lina', emoji: '📣', desc: '负责健身活动促销与品牌传播。', status: 'active', specialty: ['活动策划', '社群运营', '品牌传播'], cognitiveWeight: 'DeepSeek', promptsCount: 10 }
       ]
     },
     {
-      id: 'creator',
-      name: '电商网红核心团队',
-      emoji: '📱',
-      tagline: '专注网红电商的选品、内容、直播与运营。',
-      color: 'from-purple-500/20 to-violet-500/10 border-purple-500/30',
+      id: 'jewelry',
+      name: '珠宝行业核心团队',
+      emoji: '💎',
+      tagline: '专注珠宝设计、鉴定与高端运营。',
+      color: 'from-amber-300/20 to-yellow-500/10 border-amber-300/30',
       roster: [
-        { role: 'AI选品经理', name: 'Giles', emoji: '🛍️', desc: '负责带货选品、爆款结构与成本控价。', status: 'active', specialty: ['爆品选品', '成本核算', '价效对比'], cognitiveWeight: 'Gemini 1.5 Pro', promptsCount: 12 },
-        { role: 'AI内容经理', name: 'Mercedes', emoji: '📝', desc: '负责内容脚本、短视频文案与账号调性。', status: 'active', specialty: ['脚本撰写', '内容创意', '账号定位'], cognitiveWeight: 'GPT-4o', promptsCount: 14 },
-        { role: 'AI直播经理', name: 'Kellan', emoji: '🎙️', desc: '负责直播话术、场控与转化策略。', status: 'active', specialty: ['直播话术', '场控策略', '互动留存'], cognitiveWeight: 'DeepSeek-V3', promptsCount: 18 },
-        { role: 'AI运营经理', name: 'Sylvia', emoji: '📈', desc: '负责数据分析、订单跟进与售后闭环。', status: 'active', specialty: ['转化分析', '订单跟踪', '售后复盘'], cognitiveWeight: 'Claude 3.5 Sonnet', promptsCount: 16 }
+        { role: 'AI产品设计师', name: 'Celeste', emoji: '💍', desc: '负责珠宝设计與款式开发。', status: 'active', specialty: ['宝石设计', '款式CAD', '材质建议'], cognitiveWeight: 'GPT-4o', promptsCount: 12 },
+        { role: 'AI采购经理', name: 'Duke', emoji: '📦', desc: '负责原料采购与鉴定流程。', status: 'active', specialty: ['供应商鉴定', '原料质量', '成本控制'], cognitiveWeight: 'Gemini', promptsCount: 9 },
+        { role: 'AI运营经理', name: 'Ivy', emoji: '📈', desc: '负责高净值客户服务与售后。', status: 'active', specialty: ['VIP服务', '售后鉴定', '物流保险'], cognitiveWeight: 'Claude', promptsCount: 11 },
+        { role: 'AI营销经理', name: 'Sora', emoji: '📣', desc: '负责高端品牌推广與渠道策略。', status: 'active', specialty: ['高端营销', '品牌合作', '展会策划'], cognitiveWeight: 'DeepSeek', promptsCount: 10 }
+      ]
+    },
+    {
+      id: 'home',
+      name: '家居行业核心团队',
+      emoji: '🏡',
+      tagline: '专注家居选品、搭配与物流履约。',
+      color: 'from-emerald-400/20 to-emerald-600/10 border-emerald-400/30',
+      roster: [
+        { role: 'AI选品顾问', name: 'Hugo', emoji: '🛋️', desc: '负责家居选品與风格搭配。', status: 'active', specialty: ['风格搭配', '家具选品', '供应链对接'], cognitiveWeight: 'GPT-4o', promptsCount: 10 },
+        { role: 'AI采购经理', name: 'Maya', emoji: '📦', desc: '负责采购与物流协调。', status: 'active', specialty: ['供应商管理', '库存控制', '物流协同'], cognitiveWeight: 'Gemini', promptsCount: 9 },
+        { role: 'AI运营经理', name: 'Oren', emoji: '📈', desc: '负责售后與履约优化。', status: 'active', specialty: ['履约优化', '退换货处理', '客服流程'], cognitiveWeight: 'Claude', promptsCount: 11 },
+        { role: 'AI营销经理', name: 'Tess', emoji: '📣', desc: '负责内容與渠道推广。', status: 'active', specialty: ['内容营销', '渠道运营', '促销策划'], cognitiveWeight: 'DeepSeek', promptsCount: 10 }
       ]
     }
   ];

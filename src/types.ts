@@ -3,6 +3,7 @@ export type FlowStep =
   | 'CHOOSE_INDUSTRY' 
   | 'LOGIN' 
   | 'SELECT_MODE' 
+  | 'SELECT_TEMPLATE' 
   | 'ONBOARDING' 
   | 'DASHBOARD'
   | 'CUSTOMER_STOREFRONT'
@@ -36,6 +37,12 @@ export interface IndustryData {
   tagline: string;
   bgColor: string;
   team: TeamMember[];
+}
+
+export interface TemplateOption {
+  id: string;
+  name: string;
+  industry: string;
 }
 
 export interface PricingPlan {

@@ -55,8 +55,12 @@ export default function StorefrontView({ tenantId, industryId, onAddLog }: Store
 
   // Sync settings live
   useEffect(() => {
-    let activeTenant = tenantId || 'default_tenant';
-    const unsub = onSnapshot(doc(db, 'tenants', activeTenant), (docSnap) => {
+    if (!tenantId) {
+      console.warn('StorefrontView: missing tenantId, abort sync.');
+      setLoading(false);
+      return;
+    }
+    const unsub = onSnapshot(doc(db, 'tenants', tenantId), (docSnap) => {
       if (docSnap.exists()) {
         const data = docSnap.data();
         if (data.storeTheme) setSelectedThemeId(data.storeTheme);
@@ -78,8 +82,10 @@ export default function StorefrontView({ tenantId, industryId, onAddLog }: Store
   const handleApplyThemeSettings = async () => {
     setIsSaving(true);
     try {
-      const activeTenant = tenantId || 'default_tenant';
-      await setDoc(doc(db, 'tenants', activeTenant), {
+      if (!tenantId) {
+        throw new Error('Missing tenantId for StorefrontView theme save');
+      }
+      await setDoc(doc(db, 'tenants', tenantId), {
         storeTheme: selectedThemeId,
         storeHeadline,
         phoneContact,

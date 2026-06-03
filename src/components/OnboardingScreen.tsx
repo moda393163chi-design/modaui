@@ -8,10 +8,11 @@ interface OnboardingScreenProps {
   strategy: OperatingStrategy;
   userEmail: string;
   companyName: string;
+  templateId?: string;
   onComplete: () => void;
 }
 
-export default function OnboardingScreen({ industry, strategy, userEmail, companyName, onComplete }: OnboardingScreenProps) {
+export default function OnboardingScreen({ industry, strategy, userEmail, companyName, templateId, onComplete }: OnboardingScreenProps) {
   const [logs, setLogs] = useState<string[]>([]);
   const [currentStep, setCurrentStep] = useState(0);
   const [progress, setProgress] = useState(0);
@@ -55,6 +56,16 @@ export default function OnboardingScreen({ industry, strategy, userEmail, compan
 
     // Trigger real backend initialization post
     const initBackendTenant = async () => {
+      if (!templateId) {
+        setLogs((prev) => [...prev, '⚠ 模板未选择，无法创建公司（template_id 必须）。']);
+        return;
+      }
+
+      // Generate deterministic-ish IDs client-side to ensure DB writes are namespaced
+      const tenantId = `tenant_${Date.now().toString(36)}_${Math.random().toString(36).slice(2,8)}`;
+      const companyId = `company_${Date.now().toString(36)}_${Math.random().toString(36).slice(2,6)}`;
+      const storeId = `store_${Date.now().toString(36)}_${Math.random().toString(36).slice(2,6)}`;
+
       try {
         const response = await fetch('/api/tenants/initialize', {
           method: 'POST',
@@ -63,6 +74,10 @@ export default function OnboardingScreen({ industry, strategy, userEmail, compan
             email: userEmail || 'founder@gmail.com',
             companyName: companyName || `摩登${industry.name.slice(0, 2)}有限公司`,
             industryId: industry.id,
+            templateId: templateId,
+            tenantId,
+            companyId,
+            storeId,
             strategyId: strategy.id,
             strategyName: strategy.name,
             strategyDesc: strategy.desc
@@ -72,10 +87,18 @@ export default function OnboardingScreen({ industry, strategy, userEmail, compan
         if (result.success) {
           setLogs((prev) => [
             ...prev, 
-            `🔔 智体成功入库：${result.merchant.name} (ID: ${result.merchant.id})`,
+            `🔔 智体成功入库：${result.merchant.name} (ID: ${result.merchant.id || companyId})`,
             `🔔 默认商品上架：已部署了本行业专属 SPU 供应目录。`,
             `🔔 RAG 向量智库：3 篇运营规则文本已通过向量计算并同步写入。`
           ]);
+          // Persist tenant identifiers locally for the session
+          localStorage.setItem('preview_tenant_id', tenantId);
+          localStorage.setItem('preview_company_id', companyId);
+          localStorage.setItem('preview_store_id', storeId);
+          localStorage.setItem('preview_industry_id', industry.id);
+          localStorage.setItem('preview_template_id', templateId);
+        } else {
+          setLogs((prev) => [...prev, `⚠ 创建公司失败：${result.error || 'unknown'}`]);
         }
       } catch (err: any) {
         console.warn("Real database registration failed:", err.message);
