@@ -329,16 +329,21 @@ async function startServer() {
           { name: "释压支撑高弹抗菌防螨天然乳胶枕", price: 189, inventory: 40, image: "🛏️", category: "舒适酣眠", desc: "高密度蜂窝双气孔，承托颈部自然弯曲，深睡舒压。" },
           { name: "高克重精梳大圈绒亲肤速干全棉浴袍", price: 299, inventory: 30, image: "👘", category: "客房体验", desc: "特长绒全棉多圈编织。丝滑柔软，绝佳吸水保暖性能。" }
         ],
-        influencer: [
+        creator: [
           { name: "大主播评测力捧高纤低卡爆料威化饼", price: 39, inventory: 800, image: "🍪", category: "直播爆款", desc: "Sylvia运营推荐无蔗糖高饱腹代餐卡零食。" },
           { name: "万能RGB自拍补光大光环美颜美妆灯", price: 149, inventory: 120, image: "💡", category: "主播数码", desc: "多折叠收缩高度，无缝全光谱，Kellan直播话术搭配神器。" },
           { name: "高清数字电磁动圈降噪直播领夹麦克风", price: 399, inventory: 50, image: "🎙️", category: "专业声卡", desc: "智能防喷防爆声。一拖二高速发射续航。Mercedes剪辑首推。" }
         ]
       };
 
-      const matchedSPUList = productsTemplates[industryId] || productsTemplates.fashion;
+      const validIndustryIds = ['fashion', 'catering', 'retail', 'beauty', 'hotel', 'creator'];
+      if (!validIndustryIds.includes(industryId)) {
+        res.status(400).json({ success: false, error: `Invalid industryId: ${industryId}`, message: '行业类型无效，请仅传入已支持的六大行业。' });
+        return;
+      }
+
+      const matchedSPUList = productsTemplates[industryId];
       matchedSPUList.forEach(item => {
-        db.products.push({
           id: `prod_${Math.random().toString(36).slice(2, 11)}`,
           storeId: storeId,
           name: item.name,
@@ -397,7 +402,7 @@ async function startServer() {
           { name: "Kira", role: "AI收益经理", desc: "跟踪节假日溢价。分析竞争房价、天气与尾房入座比例，执行夜间动态打折甩干。" },
           { name: "Bella", role: "AI运营经理", desc: "全渠道OTA日历自动抗冲突合并。高转化话术秒回住客精美多图高分评语。" }
         ],
-        influencer: [
+        creator: [
           { name: "Giles", role: "AI选品经理", desc: "多平台佣金分成高物色。分析今日爆带品类大盘。策划限时拼买低门槛策略。" },
           { name: "Mercedes", role: "AI内容经理", desc: "设计直播间15s快速场场脚本。撰写吃货系列引流量笔记文案，最大化吸睛。" },
           { name: "Kellan", role: "AI直播经理", desc: "生成大促爆憋话术、高光高频滚动。调节直播节奏与弹幕互动，推高场观粘度。" },
@@ -405,7 +410,7 @@ async function startServer() {
         ]
       };
 
-      const matchedRoster = rolesTemplates[industryId] || rolesTemplates.fashion;
+      const matchedRoster = rolesTemplates[industryId];
       const createdAgents: any[] = [];
       matchedRoster.forEach(emp => {
         const agt = {

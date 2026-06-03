@@ -21,14 +21,46 @@ interface ContentViewProps {
 
 export default function ContentView({ tenantId, industryId, onAddLog }: ContentViewProps) {
   // Pure modern Black/White/Gray visual state
+  const industryContentMap: Record<string, { banner: string; slogan: string }> = {
+    fashion: {
+      banner: '编织呼吸感的雅麻艺术衣物，重塑自我的感官秩序与生活格调。',
+      slogan: '经典意式手工剪裁，融合美利奴细致密纹。穿搭之间，自显锋芒。'
+    },
+    catering: {
+      banner: '每一粒豆子都凝聚着大自然的心血，手作烘焙的香醇，温暖你的每一个清晨。',
+      slogan: '匠心极速，味蕾苏醒。配发顺丰快送，30分钟极致呈献。'
+    },
+    retail: {
+      banner: '甄选居家好物，从生活细节启动品质升级。',
+      slogan: '整合智能数码与居家美学，搭建你的高效舒适生活场景。'
+    },
+    beauty: {
+      banner: '唤醒肌肤光泽，开启私域美妆高复购生态。',
+      slogan: '专业护肤方案与预约制服务，让每一次到店都成为品牌体验。'
+    },
+    hotel: {
+      banner: '高级私享住宿体验，从房态管理到入住礼遇一体化运营。',
+      slogan: '用心打磨每一个房间细节，打造入住率与好评双增长。'
+    },
+    creator: {
+      banner: '直播间即是主场，内容与带货转化一体化链接。',
+      slogan: '高频互动脚本与爆品选品，让每一场直播都成为流量变现引擎。'
+    }
+  };
+
+  const defaultIndustryContent = {
+    banner: 'AI 驱动行业运营内容生成，打造专业文案与渠道转化。',
+    slogan: '智能化营销语句与内容优化，让品牌传播更具价值。'
+  };
+
+  const industryCopy = industryContentMap[industryId] || defaultIndustryContent;
+
   const [blocks, setBlocks] = useState<ContentBlock[]>([
     {
       id: 'block-1',
       type: 'banner',
       title: '主页大图宣介语 (Slogan Header)',
-      content: industryId === 'catering' 
-        ? '每一粒豆子都凝聚着大自然的心血，手作烘焙的香醇，温暖你的每一个清晨。'
-        : '编织呼吸感的雅麻艺术衣物，重塑自我的感官秩序与生活格调。',
+      content: industryCopy.banner,
       wordCount: 32,
       lastOptimized: '2026-06-03 12:45'
     },
@@ -36,9 +68,7 @@ export default function ContentView({ tenantId, industryId, onAddLog }: ContentV
       id: 'block-2',
       type: 'slogan',
       title: '副标题/次幅品牌橱窗 (Sub Slogan)',
-      content: industryId === 'catering' 
-        ? '匠心极速，味蕾苏醒。配发顺丰快送，30分钟极致呈献。'
-        : '经典意式手工剪裁，融合美利奴细致密纹。穿搭之间，自显锋芒。',
+      content: industryCopy.slogan,
       wordCount: 26,
       lastOptimized: '刚刚'
     },

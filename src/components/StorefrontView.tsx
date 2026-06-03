@@ -27,9 +27,8 @@ const getIndustryDefaultHeadline = (indId: string) => {
     catering: '☕ Tyson Cafe · 经典美式/手作拿铁特惠',
     retail: '✈️ 全球尖货精选直邮 · 发现品质生活好物',
     beauty: '💄 Coco Salon · 焕活平衡 SPA 与定制深层理疗',
-    fitness: '🏋️ Kelly Gym · 尊享周度私教定制与低碳膳食',
-    jewelry: '💎 18K足金古法拉丝龙凤金镯 · 匠人高定传承',
-    home: '🛋️ 空间美学 · 环保级棉麻主卧全套风格软装'
+    hotel: '🏨 Velvet Stays · 精品民宿与房型预订管理',
+    creator: '📱 Live Commerce Studio · 直播带货与内容孵化中心'
   };
   return defaults[indId] || defaults.catering;
 };

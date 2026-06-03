@@ -26,7 +26,7 @@ const getIndustryDefaults = (indId: string) => {
   const defaults: Record<string, {
     company: string;
     headline: string;
-    theme: 'retro' | 'dark' | 'classic';
+    theme: 'retro' | 'dark' | 'classic' | 'fashion' | 'beauty' | 'hotel' | 'creator' | 'retail';
     products: Product[];
     welcome: string;
     recommendation: string;
@@ -37,7 +37,7 @@ const getIndustryDefaults = (indId: string) => {
     fashion: {
       company: 'Aria Fashion Studio',
       headline: '👗 Aria 季风高定系列 · 舒感美学新风尚',
-      theme: 'classic',
+      theme: 'dark',
       welcome: '您好！我是 Claire，您的 24 小时 AI 穿搭与服饰顾问。尺码不合、现货配发、潮流搭配，随时问我哦！👗',
       recommendation: 'Aria 精选季风穿搭新款碎花长裙搭配流苏开衫外套',
       agentName: 'Claire',
@@ -69,7 +69,7 @@ const getIndustryDefaults = (indId: string) => {
     retail: {
       company: 'Moda Global Direct',
       headline: '✈️ 全球尖货精选直邮 · 发现品质生活好物',
-      theme: 'classic',
+      theme: 'retail',
       welcome: 'Hello！我是 Holly，生活百货采购及物流管家。货运发运详情、多规格对账、质保保真，均可一秒解答！✈️',
       recommendation: 'Holly 甄选便携式高强度真空保温杯与极速空气炸锅组',
       agentName: 'Holly',
@@ -85,7 +85,7 @@ const getIndustryDefaults = (indId: string) => {
     beauty: {
       company: 'Coco Beauty Salon',
       headline: '💄 Coco Salon · 焕活平衡 SPA 与定制深层理疗',
-      theme: 'classic',
+      theme: 'beauty',
       welcome: '欢迎来到佳人沙龙！我是 Coco，对我们的预约变更、私域团购特卡或面膜红肿客诉有什么想了解的吗？💄',
       recommendation: 'Coco 极力特推焕活平衡 SPA 专属紧致精油深层疗程',
       agentName: 'Coco',
@@ -98,56 +98,40 @@ const getIndustryDefaults = (indId: string) => {
         { id: 'b4', name: '头道舒压毛囊净化养护', price: 128, stock: 50, image: '🧼', category: '沙龙', desc: '控油研磨净化颗粒，深层舒缓长期偏头痛与紧张脑沉。', sales: 310, rating: '96%', specs: { sizes: ['标准体验/40分钟'], labels: '附赠肩颈推拿' } }
       ]
     },
-    fitness: {
-      company: 'Kelly Fitness Center',
-      headline: '🏋️ Kelly Gym · 尊享周度私教定制与低碳膳食',
-      theme: 'dark',
-      welcome: 'Hey！我是 Kelly，您的健身课程与轻食配餐顾问。需要请假延期、调整课表或是营养餐谱吗？立即帮您排好！🏋️',
-      recommendation: 'Kelly 专配高蛋白减脂沙拉组合与周度打卡尊享私家特训',
-      agentName: 'Kelly',
-      agentDesc: 'AI 健身低碳塑形客服主管',
-      agentEmoji: '👟',
+    hotel: {
+      company: 'Luxe Haven Hotel',
+      headline: '🏨 Luxe Haven · 精品酒店尊享入住与管家式服务',
+      theme: 'hotel',
+      welcome: '欢迎入住Luxe Haven，我是您的客房智能管家Aria。需要调整房态、升级早餐或安排专车接送？我随时为您服务。🏨',
+      recommendation: 'Luxe Haven 推出当日快订升级房型与贵宾管家早餐礼遇',
+      agentName: 'Aria',
+      agentDesc: 'AI 酒店客房与礼宾客服主管',
+      agentEmoji: '🛎️',
       products: [
-        { id: 't1', name: '全身力量雕刻一对一课', price: 265, stock: 35, image: '🏋️', category: '私教', desc: '一对一量身定制动作，激活深层肌群，高效燃脂防震。', sales: 110, rating: '100%', specs: { sizes: ['单节1对1私教课', '10节体能蜕变预售卡'], labels: '国家认证教练授课' } },
-        { id: 't2', name: '控卡蛋白纤虾沙拉餐', price: 45, stock: 80, image: '🥗', category: '轻食', desc: '新鲜水熟基围虾配牛油果、羽衣甘蓝，满足增肌需求。', sales: 350, rating: '98%', specs: { sizes: ['标准单人份', '双倍虾仁减脂套餐'], labels: '下单现做30分达' } },
-        { id: 't3', name: '防震高弹速干运动背心', price: 178, stock: 65, image: '👚', category: '装备', desc: '吸湿排汗四面弹，防止剧烈震晃，美背肩带舒爽。', sales: 125, rating: '97%', specs: { sizes: ['S码', 'M码', 'L码'], labels: '经典雾霾蓝/高冷雅黑' } },
-        { id: 't4', name: '防滑降噪回弹瑜伽发汗垫', price: 128, stock: 90, image: '🧘', category: '装备', desc: '加宽加厚TPE复合防裂，双面锁滑减震，全向呵护膝肘。', sales: 240, rating: '96%', specs: { sizes: ['183cm宽屏标准版', '185cm加厚资深款'], labels: '赠送原装绑带+背袋' } }
+        { id: 'h1', name: '豪华大床房 + 早餐礼遇', price: 680, stock: 18, image: '🛏️', category: '住宿', desc: '高级大床房含丰盛早餐礼遇，适合城市出差与度假贵宾。', sales: 44, rating: '98%', specs: { sizes: ['标准大床房', '景观大床房'], labels: '含自助早餐' } },
+        { id: 'h2', name: '商务会议室时段租赁', price: 420, stock: 12, image: '🏢', category: '会议', desc: '含投影、白板与高速WiFi，适合小型商务洽谈与集训。', sales: 18, rating: '97%', specs: { sizes: ['半天/4小时', '全天/8小时'], labels: '含无线投影' } },
+        { id: 'h3', name: '房内私人SPA按摩套餐', price: 480, stock: 15, image: '💆‍♀️', category: '体验', desc: '酒店房内私享按摩服务，放松身心，配套精油与音乐。', sales: 30, rating: '96%', specs: { sizes: ['60分钟', '90分钟'], labels: '按需预定' } },
+        { id: 'h4', name: '机场接送豪华轿车服务', price: 320, stock: 10, image: '🚘', category: '接送', desc: '专车接送，含行李协助与贵宾接机引导服务。', sales: 22, rating: '98%', specs: { sizes: ['单程接机', '往返接送'], labels: '含司机服务' } }
       ]
     },
-    jewelry: {
-      company: 'Joy High Jewelry',
-      headline: '💎 18K足金古法拉丝龙凤金镯 · 匠人高定传承',
-      theme: 'retro',
-      welcome: '尊贵的贵宾您好，我是 Joy，您的专属珠宝保真礼宾。我可以为您解答一证一质检证书、实时金价变动、顺丰专机高保价包邮等细节。💎',
-      recommendation: 'Joy 鉴选足金古法拉丝龙凤金镯一证一码质检护航套',
-      agentName: 'Joy',
-      agentDesc: 'AI 高端奢品保真客服主管',
-      agentEmoji: '🤵',
+    creator: {
+      company: 'Nova Creator Studio',
+      headline: '📱 Nova Creator Studio · 直播带货与内容变现引擎',
+      theme: 'creator',
+      welcome: '欢迎来到 Nova，我是您的电商直播内容与选品引擎。需要优化直播脚本、搭配爆款带货品，或设置粉丝福利？我马上处理。📱',
+      recommendation: 'Nova 推出本场带货爆品组合与涨粉互动直播脚本',
+      agentName: 'Nova',
+      agentDesc: 'AI 创作者直播内容客服主管',
+      agentEmoji: '🎥',
       products: [
-        { id: 'j1', name: '传承古法手工拉丝龙凤金手镯', price: 5900, stock: 15, image: '💍', category: '古法金奢', desc: '足金重器，古法哑光拉丝工艺，纯工匠龙凤浮雕，富贵典雅。', sales: 24, rating: '100%', specs: { sizes: ['18克贵妃轻盈款', '24克高定祥瑞宽版'], labels: '带国家质检证一证一码' } },
-        { id: 'j2', name: '温润和田白玉平安吊坠', price: 1880, stock: 25, image: '📿', category: '和田白玉', desc: '精挑高白油亮和田玉，手工双面俏雕，玉质细腻莹润温和。', sales: 48, rating: '99%', specs: { sizes: ['精磨水滴款', '圆融平安扣型'], labels: '附赠手工红绳包装盒' } },
-        { id: 'j3', name: '公主六爪钻戒', price: 12900, stock: 8, image: '💎', category: '钻戒誓约', desc: '璀璨八心八箭切面，极致无暇切工，GIA身份保真承诺。', sales: 12, rating: '100%', specs: { sizes: ['30分精品日常款', '50分璀璨求婚星光款'], labels: '一证一码' } },
-        { id: 'j4', name: '天然极光Akoya海水珍珠耳环', price: 3600, stock: 20, image: '👂', category: '耳饰高定', desc: '金属质感强偏红极光，18K金耳轮佩戴极为典雅，尊显气场。', sales: 75, rating: '98%', specs: { sizes: ['7mm 精品一对', '8.5mm 豪奢一对'], labels: '无暇镜面极光' } }
-      ]
-    },
-    home: {
-      company: 'Holly Home Aesthetics',
-      headline: '🛋️ 空间美学 · 环保级棉麻主卧全套风格软装',
-      theme: 'classic',
-      welcome: '您好！我是 Holly，负责您的重货美学托运与空间软装排单。需要查询专线大件上楼服务或零配件寄发，由我快速受理！🛋️',
-      recommendation: 'Holly 精配现代极简环保级棉麻主卧全套风格整体软装',
-      agentName: 'Holly',
-      agentDesc: 'AI 空间美学软装客服主管',
-      agentEmoji: '📐',
-      products: [
-        { id: 'h1', name: '高回弹太空棉科技科技布沙发', price: 3800, stock: 12, image: '🛋️', category: '家具', desc: '高回弹多段托护，特种布防水防污耐磨防爪，质感轻奢。', sales: 30, rating: '99%', specs: { sizes: ['双人舒适 1.8米', '三人宽奢 2.4米'], labels: '极速大件直配上楼安装' } },
-        { id: 'h2', name: '北美橡木实木直条桌餐椅', price: 1200, stock: 18, image: '🪑', category: '家具', desc: '精选白橡木防霉，无棱角防撞，清漆环保无味。', sales: 55, rating: '98%', specs: { sizes: ['一桌四椅基础组合', '一桌六椅升级套系'], labels: '资深师傅上门免费安装' } },
-        { id: 'h3', name: '无甲醛加厚隔绝遮光高克重窗帘', price: 680, stock: 40, image: '🪵', category: '软装', desc: '高密度隔热物理降噪，挂纱免熨，无挥发甲醛，安全抗静电。', sales: 110, rating: '97%', specs: { sizes: ['高2.7米 窗宽3米/挂钩款', '高2.7米 窗宽4米/打孔款'], labels: '免加工辅料费' } },
-        { id: 'h4', name: '仿生记忆慢弯释压颈椎枕', price: 249, stock: 85, image: '🛏️', category: '寝具', desc: '科学人体曲面护颈，平躺侧卧一秒护椎，深层安享舒适熟睡。', sales: 410, rating: '98%', specs: { sizes: ['慢回弹舒睡经典一个', '家庭专享实惠两只装'], labels: 'A类亲肤防螨枕套' } }
+        { id: 'c1', name: '超火爆带货零食礼包', price: 59, stock: 240, image: '🍪', category: '直播爆款', desc: '社区零食组合，适合短视频高转化直播单品。', sales: 620, rating: '99%', specs: { sizes: ['单套装', '两套装'], labels: '带货推荐' } },
+        { id: 'c2', name: '专业主播补光环LED灯', price: 149, stock: 90, image: '💡', category: '直播装备', desc: '高显指柔光补光环，适合直播间拍摄与短视频拍摄。', sales: 430, rating: '98%', specs: { sizes: ['18英寸', '24英寸'], labels: '调色可调亮' } },
+        { id: 'c3', name: '短视频标题金句智能生成服务', price: 199, stock: 120, image: '📝', category: '内容服务', desc: 'AI 生成爆款短视频文案与直播开场脚本，提升转化率。', sales: 310, rating: '97%', specs: { sizes: ['单稿', '五稿合集'], labels: '含风格定制' } },
+        { id: 'c4', name: '专业降噪领夹麦克风', price: 299, stock: 60, image: '🎙️', category: '直播设备', desc: '智能降噪，适合 mobile 直播与短视频录制。', sales: 255, rating: '98%', specs: { sizes: ['单麦克风', '双麦克风套装'], labels: '含防喷海绵' } }
       ]
     }
   };
-  return defaults[indId] || defaults.catering;
+  return defaults[indId as keyof typeof defaults];
 };
 
 const getSupportAgent = (indId: string) => {
@@ -171,11 +155,10 @@ const getSpecsForProduct = (product: Product, indId: string): string[] => {
     catering: ['中杯 / 常温', '中杯 / 少冰', '大杯 / 热饮', '大杯 / 少冰'],
     retail: ['标准款 / 曜石黑', '升级款 / 曜石黑', '标准款 / 皓月白', '五包超值共享装'],
     beauty: ['单人体验 / 立即到店', '标准套餐 / 精细重构', '双人尊享 / 专属技师', '五次周期卡 / 极力推荐'],
-    fitness: ['单次卡 / 指定教练', '单次卡 / 全时通用', '五次训练卡 / 低碳高能', '十次卡 / 全馆通用'],
-    jewelry: ['18克 / 手工款', '24克 / 精制款', '典雅定制款(18K金)', '奢华满钻款(包邮)'],
-    home: ['标准规格 / 原木色', '标准规格 / 仿白色', '双人加宽 / 亚麻灰', '全套精装 / 包搬运上楼']
+    hotel: ['标准大床房', '景观大床房', '房内SPA', '机场接送专车'],
+    creator: ['单稿内容 / 直播脚本', '三套带货文案', '主播装备包', '直播优惠组']
   };
-  return specFallback[indId] || specFallback.catering;
+  return specFallback[indId as keyof typeof specFallback];
 };
 
 // Safe localStorage sync reader
@@ -187,14 +170,19 @@ const getLocalValue = (key: string, fallback: string) => {
   }
 };
 
-export default function CustomerStorefrontPreview() {
-  const localIndId = getLocalValue('preview_industry_id', 'catering');
-  const defaults = getIndustryDefaults(localIndId);
+const VALID_INDUSTRIES = ['fashion', 'catering', 'retail', 'beauty', 'hotel', 'creator'];
+const sanitizeIndustryId = (indId: string | null) => {
+  return VALID_INDUSTRIES.includes(indId || '') ? indId as string : undefined;
+};
 
-  const [industryId, setIndustryId] = useState(localIndId);
-  const [theme, setTheme] = useState<'retro' | 'dark' | 'classic'>(getLocalValue('preview_theme', defaults.theme) as any);
-  const [headline, setHeadline] = useState(getLocalValue('preview_headline', defaults.headline));
-  const [company, setCompany] = useState(getLocalValue('preview_company', defaults.company));
+export default function CustomerStorefrontPreview() {
+  const localIndId = sanitizeIndustryId(getLocalValue('preview_industry_id', ''));
+  const defaults = localIndId ? getIndustryDefaults(localIndId) : undefined;
+
+  const [industryId, setIndustryId] = useState<string | undefined>(localIndId);
+  const [theme, setTheme] = useState<'retro' | 'dark' | 'classic' | 'fashion' | 'beauty' | 'hotel' | 'creator' | 'retail' | undefined>(defaults?.theme);
+  const [headline, setHeadline] = useState(defaults?.headline || '');
+  const [company, setCompany] = useState(defaults?.company || '');
   const [products, setProducts] = useState<Product[]>([]);
   const [customerCart, setCustomerCart] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<'home' | 'menu' | 'cart' | 'success'>('home');
@@ -274,7 +262,7 @@ export default function CustomerStorefrontPreview() {
     const localTheme = localStorage.getItem('preview_theme') as any;
     const localHeadline = localStorage.getItem('preview_headline');
     const localCompany = localStorage.getItem('preview_company');
-    const localIndustryId = localStorage.getItem('preview_industry_id') || 'catering';
+    const localIndustryId = sanitizeIndustryId(localStorage.getItem('preview_industry_id') || '');
     const localProducts = localStorage.getItem('preview_products');
     const localTenantId = localStorage.getItem('preview_tenant_id') || 'default_tenant';
 
@@ -372,10 +360,66 @@ export default function CustomerStorefrontPreview() {
       primaryBtn: 'bg-[#18181B] hover:bg-black text-white',
       accentBg: 'bg-slate-50',
       accentBorder: 'border-slate-200',
+    },
+    fashion: {
+      bg: 'bg-[#111827]',
+      text: 'text-white',
+      textSec: 'text-slate-300',
+      badgeBg: 'bg-[#111827] text-[#FCA5A5] border-[#374151]',
+      primaryBtn: 'bg-[#ec4899] hover:bg-[#db2777] text-white',
+      accentBg: 'bg-[#1f2937]',
+      accentBorder: 'border-[#4f46e5]',
+    },
+    retail: {
+      bg: 'bg-white',
+      text: 'text-slate-900',
+      textSec: 'text-slate-500',
+      badgeBg: 'bg-slate-100 text-slate-800 border-slate-200',
+      primaryBtn: 'bg-[#0f172a] hover:bg-[#1e293b] text-white',
+      accentBg: 'bg-[#f8fafc]',
+      accentBorder: 'border-[#e2e8f0]',
+    },
+    beauty: {
+      bg: 'bg-[#FFF1F6]',
+      text: 'text-[#831843]',
+      textSec: 'text-[#9d174d]',
+      badgeBg: 'bg-[#fbcfe8] text-[#881337] border-[#f9a8d4]',
+      primaryBtn: 'bg-[#be185d] hover:bg-[#9d174d] text-white',
+      accentBg: 'bg-[#fff1f6]',
+      accentBorder: 'border-[#f9a8d4]',
+    },
+    hotel: {
+      bg: 'bg-[#F8FAFC]',
+      text: 'text-slate-900',
+      textSec: 'text-slate-600',
+      badgeBg: 'bg-[#e2e8f0] text-slate-900 border-[#cbd5e1]',
+      primaryBtn: 'bg-[#0f172a] hover:bg-[#1e293b] text-white',
+      accentBg: 'bg-[#e2e8f0]',
+      accentBorder: 'border-[#94a3b8]',
+    },
+    creator: {
+      bg: 'bg-[#0F172A]',
+      text: 'text-white',
+      textSec: 'text-[#c7d2fe]',
+      badgeBg: 'bg-[#312e81] text-[#c7d2fe] border-[#4338ca]',
+      primaryBtn: 'bg-[#7c3aed] hover:bg-[#6d28d9] text-white',
+      accentBg: 'bg-[#111827]',
+      accentBorder: 'border-[#4338ca]',
     }
   };
 
-  const currentStyle = palettes[theme] || palettes.retro;
+  const currentStyle = theme ? palettes[theme as keyof typeof palettes] : undefined;
+
+  if (!industryId || !defaults || !currentStyle) {
+    return (
+      <div className="min-h-[400px] flex items-center justify-center bg-black text-white">
+        <div className="max-w-xl text-center px-6 py-10 border border-red-500 rounded-3xl bg-[#1a030d]">
+          <h2 className="text-2xl font-bold mb-4">行业模板不存在</h2>
+          <p className="text-sm text-red-200">当前选择的行业没有可用前端模板。请重新选择有效行业或联系管理员。</p>
+        </div>
+      </div>
+    );
+  }
 
   // Dynamic SPU search filtering corresponding to products list in database
   const filteredProducts = products.filter(p => 
@@ -1133,7 +1177,7 @@ export default function CustomerStorefrontPreview() {
                       onClick={async () => {
                         setIsPaying(true);
                         const localTenantId = localStorage.getItem('preview_tenant_id') || 'default_tenant';
-                        const localIndustryId = localStorage.getItem('preview_industry_id') || 'catering';
+                        const localIndustryId = sanitizeIndustryId(localStorage.getItem('preview_industry_id') || '');
                         const newOrderId = `ORD-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(1000 + Math.random() * 9000)}`;
                         const desc = customerCart.map(it => `${it.name} x ${it.quantity}`).join(', ');
                         const total = getCartTotal();
