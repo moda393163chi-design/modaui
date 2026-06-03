@@ -13,13 +13,14 @@ import {
   SystemCronJob 
 } from '../types/modaui';
 
-// Helper to extract the tenant ID directly from logged in user email or local session fallback
+// Helper to extract the tenant ID directly from logged in user email or explicit local preview session
 export const getActiveTenantId = (): string => {
   const userEmail = auth.currentUser?.email || localStorage.getItem('preview_user_email');
   if (userEmail) {
     return userEmail.replace(/[^a-zA-Z0-9]/g, '_');
   }
-  return localStorage.getItem('preview_tenant_id') || 'default_tenant';
+  // Do not fallback to a generic tenant. Require explicit tenant selection.
+  return localStorage.getItem('preview_tenant_id') || '';
 };
 
 // Generic handle response helper
@@ -193,11 +194,11 @@ export const apiService = {
       const res = await fetch('/api/templates');
       return handleResponse(res);
     },
-    async install(tenantId: string, industryId: string) {
+    async install(tenantId: string, industryId: string, templateId: string) {
       const res = await fetch('/api/templates/install', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tenantId, industryId })
+        body: JSON.stringify({ tenantId, industryId, templateId })
       });
       return handleResponse(res);
     }

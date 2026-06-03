@@ -569,7 +569,7 @@ export default function MerchantDashboard({
     }
   });
 
-  const tenantId = userEmail ? userEmail.replace(/[^a-zA-Z0-9]/g, '_') : 'default_tenant';
+  const tenantId = typeof window !== 'undefined' ? localStorage.getItem('preview_tenant_id') || '' : '';
 
   // Real-time synchronization and Seeding logic with Google Firestore
   useEffect(() => {

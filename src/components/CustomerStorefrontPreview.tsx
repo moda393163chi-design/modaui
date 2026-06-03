@@ -4,6 +4,7 @@ import {
   Monitor, ChevronRight, Star, Clock, MapPin, Phone, Heart, Flame, Send, Search, MessageSquare
 } from 'lucide-react';
 import { db } from '../services/firebase';
+import { sanitizeIndustryId } from '../services/industryGuard';
 import { collection, onSnapshot, doc, setDoc } from 'firebase/firestore';
 
 interface Product {
@@ -170,10 +171,7 @@ const getLocalValue = (key: string, fallback: string) => {
   }
 };
 
-const VALID_INDUSTRIES = ['fashion', 'catering', 'retail', 'beauty', 'hotel', 'creator'];
-const sanitizeIndustryId = (indId: string | null) => {
-  return VALID_INDUSTRIES.includes(indId || '') ? indId as string : undefined;
-};
+// Industry validation moved to src/services/industryGuard.ts
 
 export default function CustomerStorefrontPreview() {
   const localIndId = sanitizeIndustryId(getLocalValue('preview_industry_id', ''));
@@ -264,7 +262,7 @@ export default function CustomerStorefrontPreview() {
     const localCompany = localStorage.getItem('preview_company');
     const localIndustryId = sanitizeIndustryId(localStorage.getItem('preview_industry_id') || '');
     const localProducts = localStorage.getItem('preview_products');
-    const localTenantId = localStorage.getItem('preview_tenant_id') || 'default_tenant';
+    const localTenantId = localStorage.getItem('preview_tenant_id') || '';
 
     if (localTheme) setTheme(localTheme);
     if (localHeadline) setHeadline(localHeadline);
@@ -293,41 +291,60 @@ export default function CustomerStorefrontPreview() {
     });
 
     // Dynamic subscription to the multi-tenant Firestore path for real-time customer menu updates!
-    const productColRef = collection(db, 'tenants', localTenantId, 'industries', localIndustryId, 'products');
-    const unsubscribe = onSnapshot(productColRef, (colSnap) => {
-      if (!colSnap.empty) {
-        const list: Product[] = [];
-        colSnap.forEach((docSnap) => {
-          list.push({ ...docSnap.data() } as Product);
+    let unsubscribeProducts: (() => void) | null = null;
+    if (localTenantId && localIndustryId) {
+      try {
+        const productColRef = collection(db, 'tenants', localTenantId, 'industries', localIndustryId, 'products');
+        unsubscribeProducts = onSnapshot(productColRef, (colSnap) => {
+          if (!colSnap.empty) {
+            const list: Product[] = [];
+            colSnap.forEach((docSnap) => {
+              list.push({ id: docSnap.id, ...(docSnap.data() as any) } as Product);
+            });
+            setProducts(list);
+          } else if (localProducts) {
+            try {
+              setProducts(JSON.parse(localProducts));
+            } catch (e) {
+              console.error(e);
+            }
+          } else {
+            const indDefaults = getIndustryDefaults(localIndustryId);
+            setProducts(indDefaults.products);
+          }
+        }, (error) => {
+          console.warn('Real-time preview product load fallback: ', error);
+          if (localProducts) {
+            try {
+              setProducts(JSON.parse(localProducts));
+            } catch (e) {
+              console.error(e);
+            }
+          } else {
+            const indDefaults = getIndustryDefaults(localIndustryId);
+            setProducts(indDefaults.products);
+          }
         });
-        setProducts(list);
-      } else if (localProducts) {
-        try {
-          setProducts(JSON.parse(localProducts));
-        } catch (e) {
-          console.error(e);
-        }
-      } else {
-        // Fallback default mock products matching selected industry instead of catering hardcode!
-        const indDefaults = getIndustryDefaults(localIndustryId);
-        setProducts(indDefaults.products);
+      } catch (err) {
+        console.warn('Failed to subscribe to product collection:', err);
       }
-    }, (error) => {
-      console.warn("Real-time preview product load fallback: ", error);
+    } else {
+      // No tenant or industry selected in preview — load from localProducts or defaults
       if (localProducts) {
         try {
           setProducts(JSON.parse(localProducts));
         } catch (e) {
           console.error(e);
         }
+      } else if (localIndustryId) {
+        setProducts(getIndustryDefaults(localIndustryId).products);
       } else {
-        const indDefaults = getIndustryDefaults(localIndustryId);
-        setProducts(indDefaults.products);
+        setProducts([]);
       }
-    });
+    }
 
     return () => {
-      unsubscribe();
+      if (unsubscribeProducts) unsubscribeProducts();
       unsubscribeTenant();
     };
   }, []);
@@ -480,7 +497,7 @@ export default function CustomerStorefrontPreview() {
     setUserMsgInput('');
 
     const agent = getSupportAgent(industryId);
-    const localTenantId = localStorage.getItem('preview_tenant_id') || 'default_tenant';
+                        const localTenantId = localStorage.getItem('preview_tenant_id') || '';
 
     try {
       const response = await fetch('/api/chat', {
@@ -1176,7 +1193,7 @@ export default function CustomerStorefrontPreview() {
                       disabled={isPaying}
                       onClick={async () => {
                         setIsPaying(true);
-                        const localTenantId = localStorage.getItem('preview_tenant_id') || 'default_tenant';
+                        const localTenantId = localStorage.getItem('preview_tenant_id') || '';
                         const localIndustryId = sanitizeIndustryId(localStorage.getItem('preview_industry_id') || '');
                         const newOrderId = `ORD-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(1000 + Math.random() * 9000)}`;
                         const desc = customerCart.map(it => `${it.name} x ${it.quantity}`).join(', ');

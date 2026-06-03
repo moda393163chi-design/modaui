@@ -44,8 +44,11 @@ export default function ChannelsView({ tenantId, onAddLog }: ChannelsViewProps) 
 
   // Load channels live from Firestore
   useEffect(() => {
-    let activeTenant = tenantId || 'default_tenant';
-    const collRef = collection(db, 'tenants', activeTenant, 'channels');
+    if (!tenantId) {
+      console.warn('ChannelsView: missing tenantId, abort Firestore load.');
+      return;
+    }
+    const collRef = collection(db, 'tenants', tenantId, 'channels');
 
     const unsubscribe = onSnapshot(collRef, (snap) => {
       const list: SalesChannel[] = [];
@@ -91,8 +94,10 @@ export default function ChannelsView({ tenantId, onAddLog }: ChannelsViewProps) 
     };
 
     try {
-      const activeTenant = tenantId || 'default_tenant';
-      await setDoc(doc(db, 'tenants', activeTenant, 'channels', chanId), newChannel);
+      if (!tenantId) {
+        throw new Error('Missing tenantId for ChannelsView channel creation.');
+      }
+      await setDoc(doc(db, 'tenants', tenantId, 'channels', chanId), newChannel);
 
       if (onAddLog) {
         onAddLog('AI网络架构师', '🔌', `打通了外部渠道: [${newName}] 通讯中继隧道并完成 SSL 握手安全自测。`, 'success');
@@ -109,8 +114,10 @@ export default function ChannelsView({ tenantId, onAddLog }: ChannelsViewProps) 
   // Delete Channel Connection
   const handleDeleteChannel = async (chanId: string, name: string) => {
     try {
-      const activeTenant = tenantId || 'default_tenant';
-      await deleteDoc(doc(db, 'tenants', activeTenant, 'channels', chanId));
+      if (!tenantId) {
+        throw new Error('Missing tenantId for ChannelsView channel deletion.');
+      }
+      await deleteDoc(doc(db, 'tenants', tenantId, 'channels', chanId));
       if (onAddLog) {
         onAddLog('系统大厅', '🗑', `切断了销售渠道 {${name}} 的授权。所有跨渠道库存监听接口已卸落。`, 'warn');
       }
@@ -122,8 +129,10 @@ export default function ChannelsView({ tenantId, onAddLog }: ChannelsViewProps) 
   // Save Config parameters directly
   const handleSaveConfig = async (chanId: string, updatedUrl: string, updatedId: string) => {
     try {
-      const activeTenant = tenantId || 'default_tenant';
-      await setDoc(doc(db, 'tenants', activeTenant, 'channels', chanId), {
+      if (!tenantId) {
+        throw new Error('Missing tenantId for ChannelsView config save.');
+      }
+      await setDoc(doc(db, 'tenants', tenantId, 'channels', chanId), {
         apiUrl: updatedUrl,
         appId: updatedId
       }, { merge: true });
@@ -146,11 +155,13 @@ export default function ChannelsView({ tenantId, onAddLog }: ChannelsViewProps) 
     try {
       // 1. Sync Xiaohongshu Products via POST /api/channels/xiaohongshu/sync-products
       setSyncLogs(prev => [...prev, '[12:22:31] 🔍 扫描中控 SPU 数据库，正在调用 POST /api/channels/xiaohongshu/sync-products 同步小红书库存目录...']);
-      const activeTenant = tenantId || 'default_tenant';
+      if (!tenantId) {
+        throw new Error('Missing tenantId for ChannelsView sync-products');
+      }
       const resXhs = await fetch('/api/channels/xiaohongshu/sync-products', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ merchantId: activeTenant })
+        body: JSON.stringify({ merchantId: tenantId })
       });
       const dataXhs = await resXhs.json();
       
@@ -169,7 +180,7 @@ export default function ChannelsView({ tenantId, onAddLog }: ChannelsViewProps) 
       const resDy = await fetch('/api/channels/douyin/sync-orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ merchantId: activeTenant })
+        body: JSON.stringify({ merchantId: tenantId })
       });
       const dataDy = await resDy.json();
       
@@ -187,7 +198,7 @@ export default function ChannelsView({ tenantId, onAddLog }: ChannelsViewProps) 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          merchantId: activeTenant,
+          merchantId: tenantId,
           channelName: 'TikTok Crossborder Warehouse',
           appId: appId || 'tk_881923ab',
           apiUrl: 'https://api.tiktok.com/v1'

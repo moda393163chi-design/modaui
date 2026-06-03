@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
-  Building2, Users, Flame, RefreshCw, BarChart2, ShieldCheck, Database, Key, LayoutGrid, Award, Sliders, PlayCircle, Settings, Mail, ArrowLeft, Trash2, SlidersHorizontal, Layers, Activity, Brain, Link, Check, Plus, Search, FileText, Cpu
+  Building2, Users, Flame, RefreshCw, BarChart2, ShieldCheck, Database, Key, LayoutGrid, Award, Sliders, PlayCircle, Settings, Mail, ArrowLeft, Trash2, SlidersHorizontal, Layers, Activity, Brain, Link, Check, Plus, Search, FileText, Cpu, UploadCloud
 } from 'lucide-react';
+import { uploadFileToStorage } from '../services/firebase';
 
 interface ShopInstance {
   id: string;
   name: string;
-  industry: 'catering' | 'retail' | 'fashion' | 'beauty' | 'hotel' | 'creator';
+  industry: 'fashion' | 'catering' | 'beauty' | 'fitness' | 'jewelry' | 'home';
   founderEmail: string;
   planLevel: 'Trial' | 'Pro' | 'Enterprise';
   dailyTokens: number;
@@ -101,6 +102,36 @@ export default function PlatformAdminView({
   const [sandboxQuery, setSandboxQuery] = useState<string>('landmarkglobal 采购羊绒衣服');
   const [sandboxResult, setSandboxResult] = useState<any | null>(null);
   const [isSimulatingRecall, setIsSimulatingRecall] = useState<boolean>(false);
+  const [selectedApkName, setSelectedApkName] = useState<string>('');
+  const [apkUploadStatus, setApkUploadStatus] = useState<string>('未上传');
+  const [apkDownloadUrl, setApkDownloadUrl] = useState<string>('');
+  const [isApkUploading, setIsApkUploading] = useState<boolean>(false);
+  const apkInputRef = useRef<HTMLInputElement | null>(null);
+
+  const handleTriggerApkSelect = () => {
+    apkInputRef.current?.click();
+  };
+
+  const handleApkSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setSelectedApkName(file.name);
+    setApkUploadStatus('已选择 APK，开始上传...');
+    setIsApkUploading(true);
+    setApkDownloadUrl('');
+
+    try {
+      const storagePath = `apk-uploads/${Date.now()}_${file.name}`;
+      const downloadUrl = await uploadFileToStorage(storagePath, file);
+      setApkUploadStatus('APK 上传完成');
+      setApkDownloadUrl(downloadUrl);
+    } catch (error: any) {
+      console.error('APK 上传失败:', error);
+      setApkUploadStatus(`上传失败：${error?.message || '请检查 Firebase 配置'}`);
+    } finally {
+      setIsApkUploading(false);
+    }
+  };
 
   const handleSimulateRecall = () => {
     setIsSimulatingRecall(true);
@@ -615,14 +646,48 @@ export default function PlatformAdminView({
             </p>
           </div>
 
-          <button
-            onClick={handleAuditDiagnostics}
-            disabled={systemState === 'auditing'}
-            className="px-4 py-2.5 rounded border border-sky-500 bg-sky-950/25 hover:bg-sky-950/40 text-sky-400 text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center space-x-2"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${systemState === 'auditing' ? 'animate-spin' : ''}`} />
-            <span>{systemState === 'auditing' ? '检测中...' : '安全巡检'}</span>
-          </button>
+          <div className="flex flex-wrap gap-2 items-center">
+            <button
+              onClick={handleAuditDiagnostics}
+              disabled={systemState === 'auditing'}
+              className="px-4 py-2.5 rounded border border-sky-500 bg-sky-950/25 hover:bg-sky-950/40 text-sky-400 text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center space-x-2"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${systemState === 'auditing' ? 'animate-spin' : ''}`} />
+              <span>{systemState === 'auditing' ? '检测中...' : '安全巡检'}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleTriggerApkSelect}
+              disabled={isApkUploading}
+              className="px-4 py-2.5 rounded border border-emerald-500 bg-emerald-950/25 hover:bg-emerald-950/40 text-emerald-300 text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <UploadCloud className="w-3.5 h-3.5" />
+              <span>{isApkUploading ? 'APK 上传中...' : '上传 APK'}</span>
+            </button>
+            <input
+              ref={apkInputRef}
+              type="file"
+              accept=".apk"
+              className="hidden"
+              onChange={handleApkSelect}
+            />
+          </div>
+        </div>
+
+        <div className="px-4 py-3 border border-[#2F3336] rounded-lg bg-[#071017] text-xs text-neutral-400 font-mono">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <span>APK 上传状态：<span className="text-emerald-300">{apkUploadStatus}</span></span>
+            <span>{selectedApkName ? `已选择文件: ${selectedApkName}` : '请选择一个 APK 文件以继续上传。'}</span>
+          </div>
+          {apkDownloadUrl && (
+            <div className="mt-2 text-[11px] text-sky-300 break-all">
+              上传地址：
+              <a href={apkDownloadUrl} target="_blank" rel="noreferrer" className="underline">
+                {apkDownloadUrl}
+              </a>
+            </div>
+          )}
         </div>
 
         {/* 4 Cards Overview Grid */}

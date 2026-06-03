@@ -10,6 +10,7 @@ import { INDUSTRIES, OPERATING_STRATEGIES } from './data';
 import LandingPage from './components/LandingPage';
 import GoogleLoginModal from './components/GoogleLoginModal';
 import OnboardingScreen from './components/OnboardingScreen';
+import TemplateSelector from './components/TemplateSelector';
 import MerchantDashboard from './components/MerchantDashboard';
 import CustomerStorefrontPreview from './components/CustomerStorefrontPreview';
 import UnifiedArchitectureBridge from './components/UnifiedArchitectureBridge';
@@ -36,6 +37,7 @@ export default function App() {
     CHOOSE_INDUSTRY: '/choose-industry',
     LOGIN: '/login',
     SELECT_MODE: '/create-strategy',
+    SELECT_TEMPLATE: '/select-template',
     ONBOARDING: '/onboarding',
     DASHBOARD: '/merchant-admin',
     CUSTOMER_STOREFRONT: '/customer-mall',
@@ -57,6 +59,7 @@ export default function App() {
   const [selectedIndustry, setSelectedIndustry] = useState<IndustryData>(INDUSTRIES[0]);
   const [customCompanyName, setCustomCompanyName] = useState('');
   const [selectedStrategy, setSelectedStrategy] = useState<OperatingStrategy>(OPERATING_STRATEGIES[0]);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [userEmail, setUserEmail] = useState('');
   const [userRole, setUserRole] = useState<'founder' | 'admin' | 'manager' | 'staff' | 'customer'>('founder');
@@ -194,6 +197,7 @@ export default function App() {
     CHOOSE_INDUSTRY: { path: 'modaui.com/industry', name: '选择行业', tag: 'INDUSTRIES' },
     LOGIN: { path: 'modaui.com/login', name: '用户登录', tag: 'AUTH_GATE' },
     SELECT_MODE: { path: 'modaui.com/strategy', name: '决策配置', tag: 'STRATEGIES' },
+    SELECT_TEMPLATE: { path: 'modaui.com/select-template', name: '选择模板', tag: 'TEMPLATES' },
     ONBOARDING: { path: 'modaui.com/spawn', name: '智体孵化', tag: 'INCUBATOR' },
     DASHBOARD: { path: 'modaui.com/merchant', name: '商家管理', tag: 'MERCHANT' },
     CUSTOMER_STOREFRONT: { path: 'modaui.com/mall', name: '店面交易', tag: 'BUYER_MALL' },
@@ -467,20 +471,46 @@ export default function App() {
 
               {/* Deploy Action */}
               <div className="pt-2 border-t border-[#2F3336] flex items-center justify-between">
-                <p className="text-[10px] text-[#8B949E] leading-relaxed max-w-xs font-mono">
-                  一键登录系统。
-                </p>
-                <button
-                  onClick={() => setStep('ONBOARDING')}
-                  disabled={!customCompanyName.trim()}
-                  className={`bg-[#1D9BF0] hover:bg-[#38BDF8] active:bg-[#1A8CD8] text-white font-bold text-xs py-3 px-8 rounded-lg transition-colors border border-[#1D9BF0]/25 ${
-                    !customCompanyName.trim() ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
-                >
-                  一键登录系统
-                </button>
+                      <p className="text-[10px] text-[#8B949E] leading-relaxed max-w-xs font-mono">
+                        下一步：选择模板（必选）
+                      </p>
+                      <button
+                        onClick={() => setStep('SELECT_TEMPLATE')}
+                        disabled={!customCompanyName.trim()}
+                        className={`bg-[#1D9BF0] hover:bg-[#38BDF8] active:bg-[#1A8CD8] text-white font-bold text-xs py-3 px-8 rounded-lg transition-colors border border-[#1D9BF0]/25 ${
+                          !customCompanyName.trim() ? 'opacity-50 cursor-not-allowed' : ''
+                        }`}
+                      >
+                        选择模板
+                      </button>
               </div>
 
+            </div>
+          </motion.div>
+        )}
+
+        {/* Step 3.5: Template Selection */}
+        {step === 'SELECT_TEMPLATE' && (
+          <motion.div
+            key="select-template"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+          >
+            <div className="min-h-screen flex flex-col justify-center items-center py-16 px-6">
+              <div className="w-full max-w-4xl bg-black border border-[#2F3336] p-6 rounded-xl">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-bold">选择模板（必选）</h3>
+                  <div>
+                    <button onClick={() => setStep('SELECT_MODE')} className="text-xs text-[#8B949E] hover:text-white">← 返回</button>
+                  </div>
+                </div>
+                <TemplateSelector industryId={selectedIndustry.id} selected={selectedTemplateId} onSelect={(id) => setSelectedTemplateId(id)} />
+                <div className="flex justify-end mt-6">
+                  <button disabled={!selectedTemplateId} onClick={() => setStep('ONBOARDING')} className={`bg-[#1D9BF0] text-white px-6 py-2 rounded ${!selectedTemplateId ? 'opacity-50 cursor-not-allowed' : ''}`}>确认并创建公司</button>
+                </div>
+              </div>
             </div>
           </motion.div>
         )}
@@ -500,6 +530,7 @@ export default function App() {
               userEmail={userEmail}
               companyName={customCompanyName}
               onComplete={() => setStep('DASHBOARD')}
+              templateId={selectedTemplateId}
             />
           </motion.div>
         )}

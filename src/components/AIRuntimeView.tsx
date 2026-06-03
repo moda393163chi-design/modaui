@@ -380,8 +380,7 @@ export default function AIRuntimeView({ onBackToLanding }: { onBackToLanding: ()
       return c;
     }));
 
-    const userEmail = auth.currentUser?.email;
-    const tenantId = userEmail ? userEmail.replace(/[^a-zA-Z0-9]/g, '_') : 'default_tenant';
+    const tenantId = typeof window !== 'undefined' ? localStorage.getItem('preview_tenant_id') || '' : '';
     
     handleAddLog(`【强行唤醒】[ASYNC TASK TRIGGER] 立刻强行调用后台任务：<${job.name}> 进行实地理算并同步云 Firestore...`);
 

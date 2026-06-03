@@ -47,9 +47,11 @@ export default function DiscountsView({ tenantId, industryId, onAddLog }: Discou
 
   // Load coupons live
   useEffect(() => {
-    let activeTenant = tenantId || 'default_tenant';
-    let activeInd = industryId;
-    const collRef = collection(db, 'tenants', activeTenant, 'industries', activeInd, 'coupons');
+    if (!tenantId) {
+      console.warn('DiscountsView: missing tenantId, abort Firestore load.');
+      return;
+    }
+    const collRef = collection(db, 'tenants', tenantId, 'industries', industryId, 'coupons');
     
     const unsubscribe = onSnapshot(collRef, (snap) => {
       const list: CouponItem[] = [];
@@ -94,9 +96,11 @@ export default function DiscountsView({ tenantId, industryId, onAddLog }: Discou
     };
 
     try {
-      const activeTenant = tenantId || 'default_tenant';
+      if (!tenantId) {
+        throw new Error('Missing tenantId for DiscountsView coupon create');
+      }
       const activeInd = industryId;
-      await setDoc(doc(db, 'tenants', activeTenant, 'industries', activeInd, 'coupons', couponId), data);
+      await setDoc(doc(db, 'tenants', tenantId, 'industries', activeInd, 'coupons', couponId), data);
       
       if (onAddLog) {
         onAddLog('AI营销经理', '🎫', `自主核准并成功发行优惠券 [${couponId}] (额度: ¥${discount} / 满 ¥${minSpend} 起用)。`, 'success');
@@ -114,9 +118,11 @@ export default function DiscountsView({ tenantId, industryId, onAddLog }: Discou
   // Delete Coupon
   const handleDeleteCoupon = async (couponId: string) => {
     try {
-      const activeTenant = tenantId || 'default_tenant';
+      if (!tenantId) {
+        throw new Error('Missing tenantId for DiscountsView coupon deletion');
+      }
       const activeInd = industryId;
-      await deleteDoc(doc(db, 'tenants', activeTenant, 'industries', activeInd, 'coupons', couponId));
+      await deleteDoc(doc(db, 'tenants', tenantId, 'industries', activeInd, 'coupons', couponId));
       if (onAddLog) {
         onAddLog('AI财务出纳', '🗑', `注销并回收了不活跃优惠代码 {${couponId}}，以减少边际利润流失。`, 'warn');
       }
@@ -132,9 +138,11 @@ export default function DiscountsView({ tenantId, industryId, onAddLog }: Discou
     const targetId = item.id || item.code;
     const nextState = !item.active;
     try {
-      const activeTenant = tenantId || 'default_tenant';
+      if (!tenantId) {
+        throw new Error('Missing tenantId for DiscountsView coupon toggle');
+      }
       const activeInd = industryId;
-      await updateDoc(doc(db, 'tenants', activeTenant, 'industries', activeInd, 'coupons', targetId), {
+      await updateDoc(doc(db, 'tenants', tenantId, 'industries', activeInd, 'coupons', targetId), {
         active: nextState
       });
     } catch (err) {
