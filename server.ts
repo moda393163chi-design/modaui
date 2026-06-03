@@ -2083,6 +2083,591 @@ async function startServer() {
     }
   });
 
+  // === 16. DETAILED ENTERPRISE APP STORE PLUGIN INSTALLATION API ===
+  app.get("/api/app-store", (req, res) => {
+    try {
+      // Return predefined official robust store plugins catalog
+      const storeApps = [
+        { id: "sf_express_cargo", name: "顺丰航空特惠专线 Linker", category: "logistics", description: "接入顺丰航空、陆运动态运价，自动下单并打印电子面单，包裹异常快速打折和保价理赔闭环。", developer: "SF Express Official", rating: 4.9, installCount: 5410, monthlyPricing: 15, status: "available", requiredPermissions: ["orders.read", "orders.write"] },
+        { id: "xiaohongshu_poster", name: "小红书 AI 种草爆文矩阵", category: "marketing", description: "智体自动撰写针对服装、美发和家居的精致图文笔记，多账号矩阵定时定量分发突击。", developer: "MODAUI AI Labs", rating: 4.8, installCount: 4230, monthlyPricing: 29, status: "available", requiredPermissions: ["products.read", "marketing.write"] },
+        { id: "tiktok_shop_sync", name: "TikTok Shop 跨多国货盘同步", category: "sales", description: "一键同步海外货盘多SKU库存，英美加多国汇率实时换算。自动派件至各海运转转。", developer: "CrossBorder Dev Group", rating: 4.6, installCount: 1890, monthlyPricing: 39, status: "available", requiredPermissions: ["products.read", "products.write", "orders.read"] },
+        { id: "wechat_miniprogram", name: "微信小程序极速开店一键部署", category: "sales", description: "免代码极速开通微信官方二级小程序店面，客户通过微信支付直达后端控制层。", developer: "Tencent SaaS Build", rating: 4.9, installCount: 9120, monthlyPricing: 0, status: "available", requiredPermissions: ["products.read", "orders.write"] },
+        { id: "meituan_coupon_hub", name: "美团点评团购优惠券代核销", category: "sales", description: "专为餐饮与沙龙健身打造，AI 机器人全天候核销美团券、大众点评核券，自动充卡记账。", developer: "MODAUI Platform Corp", rating: 4.7, installCount: 3200, monthlyPricing: 19, status: "available", requiredPermissions: ["orders.write", "finance.write"] },
+        { id: "ai_voice_customer", name: "AI 实时语音双向对话客服", category: "ai_tools", description: "使用 Gemini 深度声音及文本模型，支持买家通过电话、微信实时和克隆声优交流售后与选款。", developer: "Gemini Interactions Dev", rating: 4.9, installCount: 1205, monthlyPricing: 59, status: "available", requiredPermissions: ["customers.read", "customers.write", "ai.voice"] }
+      ];
+      res.json({ success: true, apps: storeApps });
+    } catch (e: any) {
+      res.status(500).json({ success: false, error: e.message });
+    }
+  });
+
+  app.get("/api/app-installations", (req, res) => {
+    try {
+      const tenantId = String(req.query.tenantId || "default_tenant");
+      const db = ModaDB.read();
+      const installs = db.appInstallations.filter(i => i.merchantId === tenantId);
+      res.json({ success: true, installations: installs });
+    } catch (e: any) {
+      res.status(500).json({ success: false, error: e.message });
+    }
+  });
+
+  app.post("/api/app-store/:appId/install", (req, res) => {
+    try {
+      const { appId } = req.params;
+      const { merchantId, config = {} } = req.body;
+      if (!merchantId) {
+        res.status(400).json({ success: false, error: "Missing parameter: merchantId is required." });
+        return;
+      }
+      const db = ModaDB.read();
+      const existing = db.appInstallations.find(i => i.merchantId === merchantId && i.appId === appId);
+      
+      if (existing) {
+        existing.status = "active";
+        existing.config = { ...existing.config, ...config };
+        existing.updatedAt = new Date().toISOString();
+      } else {
+        db.appInstallations.push({
+          id: `inst_${Math.random().toString(36).substring(2, 9)}`,
+          merchantId,
+          appId,
+          status: "active",
+          config,
+          apiKey: `key_ext_${crypto.randomUUID().replace(/-/g, "")}`,
+          webhookSecret: `whs_${Math.random().toString(36).substring(2, 10)}`,
+          installedAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        });
+      }
+
+      ModaDB.write(db);
+      ModaDB.log(merchantId, "MERCHANT", "APP_INSTALL", "APP_STORE", `Installed plugin extension into business sandbox: ${appId}`);
+      res.json({ success: true, message: "Modular store extension successfully instantiated." });
+    } catch (e: any) {
+      res.status(500).json({ success: false, error: e.message });
+    }
+  });
+
+  app.post("/api/app-store/:appId/uninstall", (req, res) => {
+    try {
+      const { appId } = req.params;
+      const { merchantId } = req.body;
+      if (!merchantId) {
+        res.status(400).json({ success: false, error: "Missing merchantId parameter" });
+        return;
+      }
+      const db = ModaDB.read();
+      db.appInstallations = db.appInstallations.filter(i => !(i.merchantId === merchantId && i.appId === appId));
+      ModaDB.write(db);
+      ModaDB.log(merchantId, "MERCHANT", "APP_UNINSTALL", "APP_STORE", `Evicted plugin extension: ${appId}`);
+      res.json({ success: true, message: "Plugin uninstalled successfully." });
+    } catch (e: any) {
+      res.status(500).json({ success: false, error: e.message });
+    }
+  });
+
+  // === 17. MARKETING AUTOMATION WORKFLOWS & CAMPAIGNS API ===
+  app.get("/api/campaigns", (req, res) => {
+    try {
+      const tenantId = String(req.query.tenantId || "default_tenant");
+      const db = ModaDB.read();
+      const merchantCampaigns = db.campaigns.filter(c => c.merchantId === tenantId);
+      res.json({ success: true, campaigns: merchantCampaigns });
+    } catch (e: any) {
+      res.status(500).json({ success: false, error: e.message });
+    }
+  });
+
+  app.post("/api/campaigns/create", (req, res) => {
+    try {
+      const { merchantId, name, type, trigger, audience, content } = req.body;
+      if (!merchantId || !name || !type) {
+        res.status(400).json({ success: false, error: "Missing required campaign parameters." });
+        return;
+      }
+      const db = ModaDB.read();
+      const newCampaign: DBCampaign = {
+        id: `cmp_${crypto.randomUUID().substring(0, 8)}`,
+        merchantId,
+        name,
+        type,
+        status: "draft",
+        trigger: trigger || { type: "manual" },
+        audience: audience || { filters: [], count: 154 },
+        content: content || { body: "输入您的营销爆款文案内容..." },
+        performance: { sent: 0, delivered: 0, opened: 0, clicked: 0, converted: 0, revenue: 0 },
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      db.campaigns.unshift(newCampaign);
+      ModaDB.write(db);
+      ModaDB.log(merchantId, "MERCHANT_CAMPAIGN", "CREATE_CAMPAIGN", "CAMPAIGN_BUILDER", `Drafted advertising campaign: ${name}`);
+      res.json({ success: true, campaign: newCampaign });
+    } catch (e: any) {
+      res.status(500).json({ success: false, error: e.message });
+    }
+  });
+
+  app.post("/api/campaigns/:campaignId/launch", (req, res) => {
+    try {
+      const { campaignId } = req.params;
+      const { merchantId } = req.body;
+      const db = ModaDB.read();
+      const campaign = db.campaigns.find(c => c.id === campaignId && c.merchantId === merchantId);
+      if (!campaign) {
+        res.status(404).json({ success: false, error: "Campaign not found." });
+        return;
+      }
+
+      // Simulate sending out metrics
+      campaign.status = "completed";
+      campaign.updatedAt = new Date().toISOString();
+      campaign.performance = {
+        sent: 1000,
+        delivered: 980,
+        opened: 412,
+        clicked: 184,
+        converted: 24,
+        revenue: 2376
+      };
+
+      // Add a financial receipt of simulated ads distribution pricing
+      db.finance.push({
+        id: `fin_cmp_${crypto.randomUUID().substring(0, 8)}`,
+        merchantId,
+        type: "expense",
+        amount: 50.0, // $50 advertising cost
+        description: `广告营销网络推送分发成本 (活动: ${campaign.name})`,
+        createdAt: new Date().toISOString()
+      });
+
+      ModaDB.write(db);
+      ModaDB.log(merchantId, "MERCHANT_CAMPAIGN", "LAUNCH_CAMPAIGN", "CAMPAIGN_LAUNCHER", `Dispatched promotional ads: ${campaign.name}`);
+      res.json({ success: true, campaign });
+    } catch (e: any) {
+      res.status(500).json({ success: false, error: e.message });
+    }
+  });
+
+  app.get("/api/campaigns/:campaignId/analytics", (req, res) => {
+    try {
+      const { campaignId } = req.params;
+      const tenantId = String(req.query.tenantId || "default_tenant");
+      const db = ModaDB.read();
+      const campaign = db.campaigns.find(c => c.id === campaignId && c.merchantId === tenantId);
+      if (!campaign) {
+        res.status(404).json({ success: false, error: "Campaign profile missing" });
+        return;
+      }
+      res.json({ success: true, performance: campaign.performance });
+    } catch (e: any) {
+      res.status(500).json({ success: false, error: e.message });
+    }
+  });
+
+  // === 18. OMNI-CHANNEL STORE integrations (TikTok, xiaohongshu) ===
+  app.get("/api/channels", (req, res) => {
+    try {
+      const tenantId = String(req.query.tenantId || "default_tenant");
+      const db = ModaDB.read();
+      const currentChs = db.channelConnections.filter(c => c.merchantId === tenantId);
+      res.json({ success: true, connections: currentChs });
+    } catch (e: any) {
+      res.status(500).json({ success: false, error: e.message });
+    }
+  });
+
+  app.post("/api/channels/tiktok/connect", (req, res) => {
+    try {
+      const { merchantId, channel, authCode } = req.body;
+      if (!merchantId || !channel) {
+        res.status(400).json({ success: false, error: "Missing parameters merchantId or channel" });
+        return;
+      }
+      const db = ModaDB.read();
+      // Remove stale connection if existing
+      db.channelConnections = db.channelConnections.filter(c => !(c.merchantId === merchantId && c.channel === channel));
+
+      const newConn: DBChannelConnection = {
+        id: `chn_${Math.random().toString(36).substring(2, 9)}`,
+        merchantId,
+        channel,
+        status: "connected",
+        accessToken: `tok_ext_${crypto.randomUUID().substring(0, 16)}`,
+        storeId: `sto_ext_${Math.random().toString(36).substring(2, 8)}`,
+        config: { authCode: authCode || "standard_oauth_token" },
+        connectedAt: new Date().toISOString()
+      };
+      db.channelConnections.push(newConn);
+      ModaDB.write(db);
+      ModaDB.log(merchantId, "CHANNELS", "CONNECT_CHANNEL", "CHANNEL_INTEGRATOR", `Connected store to external media channel: ${channel}`);
+      res.json({ success: true, connection: newConn });
+    } catch (e: any) {
+      res.status(500).json({ success: false, error: e.message });
+    }
+  });
+
+  app.post("/api/channels/xiaohongshu/sync-products", (req, res) => {
+    try {
+      const { merchantId, channels } = req.body;
+      if (!merchantId || !channels) {
+        res.status(400).json({ success: false, error: "Parameters merchantId and channels list are required." });
+        return;
+      }
+      // Log external system API calls
+      ModaDB.log(merchantId, "CHANNELS", "SYNC_PRODUCTS", "CHANNEL_INTEGRATOR", `Synchronized merchandise catalog to external lanes: ${channels.join(", ")}`);
+      res.json({ success: true, message: `Successfully synced inventory metadata to active networks: ${channels.join(", ")}` });
+    } catch (e: any) {
+      res.status(500).json({ success: false, error: e.message });
+    }
+  });
+
+  app.post("/api/channels/douyin/sync-orders", (req, res) => {
+    try {
+      const { merchantId } = req.body;
+      if (!merchantId) {
+        res.status(400).json({ success: false, error: "merchantId required" });
+        return;
+      }
+      const db = ModaDB.read();
+      // Pull and construct a simulated purchase from TikTok / Douyin
+      const mockOrderId = `ord_ext_${Math.random().toString(36).substring(2, 9)}`;
+      const extProducts = db.products.filter(p => p.storeId === `sto_${merchantId}`);
+      const selectedProd = extProducts[0] || { id: "p1", name: "时尚风衣外套", price: 199 };
+      
+      const newOrder: DBOrder = {
+        id: mockOrderId,
+        userId: "ext_omni_buyer",
+        storeId: `sto_${merchantId}`,
+        merchantId,
+        items: [{ productId: selectedProd.id, productName: selectedProd.name, price: Number(selectedProd.price), quantity: 1 }],
+        totalPrice: Number(selectedProd.price),
+        status: "processing",
+        createdAt: new Date().toISOString()
+      };
+
+      db.orders.unshift(newOrder);
+
+      // Add financial revenue ledger
+      db.finance.push({
+        id: `fin_${crypto.randomUUID().substring(0, 8)}`,
+        merchantId,
+        type: "revenue",
+        amount: Number(selectedProd.price),
+        orderId: mockOrderId,
+        description: `对外全渠道销售回款 (渠道: 多媒体渠道自动同步录单)`,
+        createdAt: new Date().toISOString()
+      });
+
+      ModaDB.write(db);
+      ModaDB.log(merchantId, "CHANNELS", "SYNC_ORDERS", "CHANNEL_INTEGRATOR", `Imported external customer ticket automatically: ${mockOrderId}`);
+      res.json({ success: true, message: "Channel orders updated.", order: newOrder });
+    } catch (e: any) {
+      res.status(500).json({ success: false, error: e.message });
+    }
+  });
+
+  // === 19. RBAC TEAM PRIVILEGES & STAFF SYSTEM ===
+  app.get("/api/roles", (req, res) => {
+    try {
+      const tenantId = String(req.query.tenantId || "default_tenant");
+      const db = ModaDB.read();
+      const merchantRoles = db.roles.filter(r => r.merchantId === tenantId);
+      res.json({ success: true, roles: merchantRoles.length > 0 ? merchantRoles : [
+        { id: "owner", name: "系统创办持有人", description: "拥有全局所有控制权限、结账配置与高级微调设置范围。", permissions: ["products:write", "orders:write", "finance:read", "settings:manage"], merchantId: tenantId },
+        { id: "operator", name: "智能带班店长", description: "日常商品及分单履约处理，可以查阅销售明细。", permissions: ["products:write", "orders:write"], merchantId: tenantId }
+      ] });
+    } catch (e: any) {
+      res.status(500).json({ success: false, error: e.message });
+    }
+  });
+
+  app.post("/api/roles/create", (req, res) => {
+    try {
+      const { merchantId, name, description, permissions } = req.body;
+      if (!merchantId || !name) {
+        res.status(400).json({ success: false, error: "Missing active tenant context or role tag name" });
+        return;
+      }
+      const db = ModaDB.read();
+      const newRole: DBRole = {
+        id: `rol_${Math.random().toString(36).substring(2, 8)}`,
+        name,
+        description: description || "店员角色说明...",
+        permissions: permissions || ["products:read"],
+        merchantId
+      };
+      db.roles.push(newRole);
+      ModaDB.write(db);
+      ModaDB.log(merchantId, "RBAC_SYSTEM", "CREATE_ROLE", "TEAM_SECURITY", `Created custom workspace role level: ${name}`);
+      res.json({ success: true, role: newRole });
+    } catch (e: any) {
+      res.status(500).json({ success: false, error: e.message });
+    }
+  });
+
+  app.get("/api/staff", (req, res) => {
+    try {
+      const tenantId = String(req.query.tenantId || "default_tenant");
+      const db = ModaDB.read();
+      const list = db.staffPermissions.filter(s => s.merchantId === tenantId);
+      res.json({ success: true, staff: list.length > 0 ? list : [
+        { id: "stf_1", merchantId: tenantId, email: "manager@modaui.com", name: "店长助手 阿杰", roles: ["operator"], status: "active" }
+      ] });
+    } catch (e: any) {
+      res.status(500).json({ success: false, error: e.message });
+    }
+  });
+
+  app.put("/api/staff/:staffId/update-role", (req, res) => {
+    try {
+      const { staffId } = req.params;
+      const { merchantId, roles } = req.body;
+      const db = ModaDB.read();
+      const staff = db.staffPermissions.find(s => s.id === staffId && s.merchantId === merchantId);
+      if (!staff) {
+        res.status(404).json({ success: false, error: "Teammate profile not found in active workspace." });
+        return;
+      }
+      staff.roles = roles;
+      ModaDB.write(db);
+      ModaDB.log(merchantId, "RBAC_SYSTEM", "UPDATE_STAFF", "TEAM_SECURITY", `Adjusted team parameters for system user: ${staff.name}`);
+      res.json({ success: true, staff });
+    } catch (e: any) {
+      res.status(500).json({ success: false, error: e.message });
+    }
+  });
+
+  app.post("/api/staff/invite", (req, res) => {
+    try {
+      const { merchantId, email, name, roles } = req.body;
+      if (!merchantId || !email || !name) {
+        res.status(400).json({ success: false, error: "Missing recipient details" });
+        return;
+      }
+      const db = ModaDB.read();
+      const newStaff: DBStaffPermission = {
+        id: `stf_${Math.random().toString(36).substring(2, 9)}`,
+        merchantId,
+        email,
+        name,
+        roles: roles || ["operator"],
+        status: "invited"
+      };
+      db.staffPermissions.push(newStaff);
+      ModaDB.write(db);
+      ModaDB.log(merchantId, "RBAC_SYSTEM", "INVITE_STAFF", "TEAM_SECURITY", `Dispatched collaboration invitation to: ${email}`);
+      res.json({ success: true, staff: newStaff });
+    } catch (e: any) {
+      res.status(500).json({ success: false, error: e.message });
+    }
+  });
+
+  // === 20. CUSTOM THEME DESIGNER ENGINE ===
+  app.get("/api/themes", (req, res) => {
+    try {
+      const tenantId = String(req.query.tenantId || "default_tenant");
+      const db = ModaDB.read();
+      const list = db.themes.filter(t => t.merchantId === tenantId);
+      res.json({ success: true, themes: list.length > 0 ? list : [
+        { id: "thm_default", merchantId: tenantId, name: "MODA经典流线 (Default Air)", status: "published", config: { colors: { primary: "#d4af37", secondary: "#111111", background: "#fcfbf7", text: "#1e1e1e" }, fonts: { heading: "Playfair Display", body: "Inter" }, layout: { headerStyle: "luxury", footerEnabled: true } }, previewUrl: "https://picsum.photos/400/300" }
+      ] });
+    } catch (e: any) {
+      res.status(500).json({ success: false, error: e.message });
+    }
+  });
+
+  app.put("/api/themes/:themeId", (req, res) => {
+    try {
+      const { themeId } = req.params;
+      const { merchantId, config } = req.body;
+      const db = ModaDB.read();
+      let theme = db.themes.find(t => t.id === themeId && t.merchantId === merchantId);
+      if (!theme) {
+        // Create custom theme node on edit if it doesn't exist
+        theme = {
+          id: themeId,
+          merchantId,
+          name: "自定义品牌微调 (Custom Vibe)",
+          status: "draft",
+          config: config,
+          previewUrl: "https://picsum.photos/400/300"
+        };
+        db.themes.push(theme);
+      } else {
+        theme.config = { ...theme.config, ...config };
+      }
+      ModaDB.write(db);
+      res.json({ success: true, theme });
+    } catch (e: any) {
+      res.status(500).json({ success: false, error: e.message });
+    }
+  });
+
+  app.post("/api/themes/:themeId/publish", (req, res) => {
+    try {
+      const { themeId } = req.params;
+      const { merchantId } = req.body;
+      const db = ModaDB.read();
+      db.themes.forEach(t => {
+        if (t.merchantId === merchantId) {
+          t.status = t.id === themeId ? "published" : "archived";
+        }
+      });
+      const published = db.themes.find(t => t.id === themeId && t.merchantId === merchantId);
+      
+      // Mirror branding details inside DBStore
+      const matchedStore = db.stores.find(s => s.merchantId === merchantId);
+      if (matchedStore && published) {
+        matchedStore.branding = {
+          ...matchedStore.branding,
+          colorTheme: (published.config.colors.primary === "#d4af37" ? "classic" : "warm")
+        };
+      }
+
+      ModaDB.write(db);
+      ModaDB.log(merchantId, "STOREFRONT_THEMES", "PUBLISH_THEME", "THEME_BUILDER", `Deimplemented previous layout; published branding code style: ${themeId}`);
+      res.json({ success: true, message: "Theme published to global storefront." });
+    } catch (e: any) {
+      res.status(500).json({ success: false, error: e.message });
+    }
+  });
+
+  // === 21. CUSTOM WEBHOOKS & API CREDENTIALS GATEWAY ===
+  app.get("/api/webhooks", (req, res) => {
+    try {
+      const tenantId = String(req.query.tenantId || "default_tenant");
+      const db = ModaDB.read();
+      const currentList = db.webhookRegistrations.filter(w => w.merchantId === tenantId);
+      res.json({ success: true, webhooks: currentList });
+    } catch (e: any) {
+      res.status(500).json({ success: false, error: e.message });
+    }
+  });
+
+  app.post("/api/webhooks/register", (req, res) => {
+    try {
+      const { merchantId, event, targetUrl } = req.body;
+      if (!merchantId || !event || !targetUrl) {
+        res.status(400).json({ success: false, error: "Missing parameters merchantId, event, or targetUrl." });
+        return;
+      }
+      const db = ModaDB.read();
+      const newWebhook: DBWebhookReg = {
+        id: `whk_${Math.random().toString(36).substring(2, 9)}`,
+        merchantId,
+        event,
+        targetUrl,
+        active: true,
+        createdAt: new Date().toISOString()
+      };
+      db.webhookRegistrations.push(newWebhook);
+      ModaDB.write(db);
+      ModaDB.log(merchantId, "WEBHOOKS", "REGISTER_WEBHOOK", "WEBHOOK_DISPATCHER", `Subscribed URL node to system event listener stream: ${event} -> ${targetUrl}`);
+      res.json({ success: true, webhook: newWebhook });
+    } catch (e: any) {
+      res.status(500).json({ success: false, error: e.message });
+    }
+  });
+
+  app.delete("/api/webhooks/:webhookId", (req, res) => {
+    try {
+      const { webhookId } = req.params;
+      const tenantId = String(req.query.tenantId || "default_tenant");
+      const db = ModaDB.read();
+      db.webhookRegistrations = db.webhookRegistrations.filter(w => !(w.id === webhookId && w.merchantId === tenantId));
+      ModaDB.write(db);
+      res.json({ success: true, message: "Webhook successfully detached." });
+    } catch (e: any) {
+      res.status(500).json({ success: false, error: e.message });
+    }
+  });
+
+  app.get("/api/settings/api-keys", (req, res) => {
+    try {
+      const tenantId = String(req.query.tenantId || "default_tenant");
+      const db = ModaDB.read();
+      const keys = db.apiKeys.filter(k => k.merchantId === tenantId);
+      res.json({ success: true, keys });
+    } catch (e: any) {
+      res.status(500).json({ success: false, error: e.message });
+    }
+  });
+
+  app.post("/api/settings/api-keys", (req, res) => {
+    try {
+      const { merchantId, name } = req.body;
+      if (!merchantId || !name) {
+        res.status(400).json({ success: false, error: "Parameters merchantId and name are required." });
+        return;
+      }
+      const db = ModaDB.read();
+      const newKey: DBAPIKey = {
+        id: `api_${Math.random().toString(36).substring(2, 8)}`,
+        merchantId,
+        name,
+        apiKey: `moda_key_${crypto.randomUUID().replace(/-/g, "")}`,
+        scopes: ["products:read", "orders:read"],
+        createdAt: new Date().toISOString()
+      };
+      db.apiKeys.push(newKey);
+      ModaDB.write(db);
+      ModaDB.log(merchantId, "DEVELOPER_PORTAL", "GENERATE_API_KEY", "SECURITY_MGMT", `Issued custom headless developer API client credential: ${name}`);
+      res.json({ success: true, key: newKey });
+    } catch (e: any) {
+      res.status(500).json({ success: false, error: e.message });
+    }
+  });
+
+  app.delete("/api/settings/api-keys/:keyId", (req, res) => {
+    try {
+      const { keyId } = req.params;
+      const tenantId = String(req.query.tenantId || "default_tenant");
+      const db = ModaDB.read();
+      db.apiKeys = db.apiKeys.filter(k => !(k.id === keyId && k.merchantId === tenantId));
+      ModaDB.write(db);
+      res.json({ success: true, message: "API key successfully revoked." });
+    } catch (e: any) {
+      res.status(500).json({ success: false, error: e.message });
+    }
+  });
+
+  app.post("/api/webhooks/test-dispatch", (req, res) => {
+    try {
+      const { merchantId, event } = req.body;
+      if (!merchantId || !event) {
+        res.status(400).json({ success: false, error: "Missing parameters merchantId or event." });
+        return;
+      }
+      
+      const db = ModaDB.read();
+      const matchedHooks = db.webhookRegistrations.filter(w => w.merchantId === merchantId && w.event === event);
+      
+      // Simulate payload
+      const samplePayload = {
+        eventId: `evt_${Math.random().toString(36).substring(2, 9)}`,
+        event,
+        timestamp: new Date().toISOString(),
+        productName: "经典极智高级成衣 SPU-009",
+        qty: 1,
+        paidAmount: 299,
+        customerEmail: "vip@modaui.com",
+        orderId: `ord_${Math.random().toString(36).substring(2, 9)}`
+      };
+
+      ModaDB.log(merchantId, "WEBHOOKS", "TEST_DISPATCH_WEBHOOK", "WEBHOOK_DISPATCHER", `Dispatched mock event payload for: [${event}]`);
+      
+      res.json({ 
+        success: true, 
+        matchedCount: matchedHooks.length,
+        samplePayload
+      });
+    } catch (e: any) {
+      res.status(500).json({ success: false, error: e.message });
+    }
+  });
+
   // Serve static assets OR handle Vite in middleware mode
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({

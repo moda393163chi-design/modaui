@@ -28,6 +28,8 @@ import DiscountsView from './DiscountsView';
 import ContentView from './ContentView';
 import ChannelsView from './ChannelsView';
 import StorefrontView from './StorefrontView';
+import AppStoreView from './AppStoreView';
+import DeveloperConsoleView from './DeveloperConsoleView';
 import { 
   collection, 
   doc, 
@@ -281,8 +283,8 @@ export default function MerchantDashboard({
   onUpdateRole
 }: MerchantDashboardProps) {
   // Backstage Active Menu State
-  // 'workbench' | 'store' | 'product' | 'order' | 'customer' | 'marketing' | 'analytics' | 'settings' | 'team_members'
-  const [activeMenu, setActiveMenu] = useState<'workbench' | 'store' | 'product' | 'order' | 'customer' | 'marketing' | 'analytics' | 'settings' | 'team_members'>('workbench');
+  // 'workbench' | 'store' | 'product' | 'order' | 'customer' | 'marketing' | 'analytics' | 'settings' | 'team_members' | 'app_store' | 'developer'
+  const [activeMenu, setActiveMenu] = useState<'workbench' | 'store' | 'product' | 'order' | 'customer' | 'marketing' | 'analytics' | 'settings' | 'team_members' | 'app_store' | 'developer'>('workbench');
   
   const [sales, setSales] = useState(25488.60);
 
@@ -2405,6 +2407,8 @@ const handleRestoreFromDrive = async () => {
               { id: 'customer', label: '客户', desc: '客户服务', emoji: '👥', icon: Users },
               { id: 'marketing', label: '营销', desc: '营销推广', emoji: '📣', icon: Sparkles },
               { id: 'analytics', label: '分析', desc: '数据统计', emoji: '📊', icon: LineChart },
+              { id: 'app_store', label: 'App Store', desc: '功能扩展', emoji: '🔌', icon: Layers },
+              { id: 'developer', label: '开发者中心', desc: '接口配置', emoji: '💻', icon: Key },
               { id: 'team_members', label: '团队成员', desc: '专家头像', emoji: '🤖', icon: Award },
               { id: 'settings', label: '设置', desc: '核心设置', emoji: '⚙️', icon: Settings },
             ].map((menuItem) => {
@@ -2468,7 +2472,9 @@ const handleRestoreFromDrive = async () => {
                   activeMenu === 'customer' ? '客诉维权' :
                   activeMenu === 'marketing' ? '营销活动' :
                   activeMenu === 'analytics' ? '收支分析' :
-                  activeMenu === 'team_members' ? '团队智能专家' : '安全设置'
+                  activeMenu === 'team_members' ? '团队智能专家' :
+                  activeMenu === 'app_store' ? '软件插件商店' :
+                  activeMenu === 'developer' ? '开发者 API 中枢' : '安全设置'
                 }</span>
               </h2>
               <p className="text-[11px] text-[#8B949E] font-mono mt-0.5">
@@ -2479,7 +2485,9 @@ const handleRestoreFromDrive = async () => {
                  activeMenu === 'customer' ? '纠纷解决' :
                  activeMenu === 'marketing' ? '生成文案' :
                  activeMenu === 'analytics' ? '损益趋势' :
-                 activeMenu === 'team_members' ? 'AI专家智能形象绘设' : '接口配置'}
+                 activeMenu === 'team_members' ? 'AI专家智能形象绘设' :
+                 activeMenu === 'app_store' ? 'SaaS官方插件装配' :
+                 activeMenu === 'developer' ? '双向 Webhooks 与密钥' : '接口配置'}
               </p>
             </div>
 
@@ -6994,6 +7002,46 @@ const handleRestoreFromDrive = async () => {
                     </div>
                   </div>
                 </div>
+              )}
+
+              {/* VIEW 10: APP STORE ECOSYSTEM EXPANSION (🔌 App Store) */}
+              {activeMenu === 'app_store' && (
+                <AppStoreView 
+                  tenantId={industry.id} 
+                  onAddLog={(sender, emoji, message, type) => {
+                    setLogs((prev) => [
+                      ...prev,
+                      {
+                        id: Math.random().toString(),
+                        timestamp: new Date().toLocaleTimeString('zh-CN', { hour12: false }),
+                        sender,
+                        emoji,
+                        message,
+                        type
+                      }
+                    ]);
+                  }}
+                />
+              )}
+
+              {/* VIEW 11: DEVELOPER CONSOLE INTEGRATION (💻 开发者) */}
+              {activeMenu === 'developer' && (
+                <DeveloperConsoleView 
+                  tenantId={industry.id} 
+                  onAddLog={(sender, emoji, message, type) => {
+                    setLogs((prev) => [
+                      ...prev,
+                      {
+                        id: Math.random().toString(),
+                        timestamp: new Date().toLocaleTimeString('zh-CN', { hour12: false }),
+                        sender,
+                        emoji,
+                        message,
+                        type
+                      }
+                    ]);
+                  }}
+                />
               )}
 
             </motion.div>

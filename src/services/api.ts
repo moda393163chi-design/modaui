@@ -400,5 +400,238 @@ export const apiService = {
       const res = await fetch(url);
       return handleResponse(res);
     }
+  },
+
+  // === Dynamic App Store & Extensions ===
+  appStore: {
+    async list() {
+      const res = await fetch('/api/app-store');
+      return handleResponse(res);
+    },
+    async install(tenantId: string, appId: string, config = {}) {
+      const res = await fetch(`/api/app-store/${appId}/install`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ merchantId: tenantId, config })
+      });
+      return handleResponse(res);
+    },
+    async uninstall(tenantId: string, appId: string) {
+      const res = await fetch(`/api/app-store/${appId}/uninstall`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ merchantId: tenantId })
+      });
+      return handleResponse(res);
+    },
+    async listInstallations(tenantId: string) {
+      const res = await fetch(`/api/app-installations?tenantId=${tenantId}`);
+      return handleResponse(res);
+    }
+  },
+
+  // === Marketing Automation Campaigns ===
+  campaigns: {
+    async list(tenantId: string) {
+      const res = await fetch(`/api/campaigns?tenantId=${tenantId}`);
+      return handleResponse(res);
+    },
+    async create(tenantId: string, campaignData: any) {
+      const res = await fetch('/api/campaigns/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ merchantId: tenantId, ...campaignData })
+      });
+      return handleResponse(res);
+    },
+    async launch(tenantId: string, campaignId: string) {
+      const res = await fetch(`/api/campaigns/${campaignId}/launch`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ merchantId: tenantId })
+      });
+      return handleResponse(res);
+    },
+    async getAnalytics(tenantId: string, campaignId: string) {
+      const res = await fetch(`/api/campaigns/${campaignId}/analytics?tenantId=${tenantId}`);
+      return handleResponse(res);
+    }
+  },
+
+  // === Omni-Channel Sales Integrations ===
+  channels: {
+    async list(tenantId: string) {
+      const res = await fetch(`/api/channels?tenantId=${tenantId}`);
+      return handleResponse(res);
+    },
+    async connect(tenantId: string, channel: string, authCode = '') {
+      const res = await fetch('/api/channels/tiktok/connect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ merchantId: tenantId, channel, authCode })
+      });
+      return handleResponse(res);
+    },
+    async syncProducts(tenantId: string, channels: string[]) {
+      const res = await fetch('/api/channels/xiaohongshu/sync-products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ merchantId: tenantId, channels })
+      });
+      return handleResponse(res);
+    },
+    async syncOrders(tenantId: string) {
+      const res = await fetch('/api/channels/douyin/sync-orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ merchantId: tenantId })
+      });
+      return handleResponse(res);
+    }
+  },
+
+  // === Role-Based Access Control (RBAC) ===
+  rbac: {
+    async listRoles(tenantId: string) {
+      const res = await fetch(`/api/roles?tenantId=${tenantId}`);
+      return handleResponse(res);
+    },
+    async createRole(tenantId: string, roleData: any) {
+      const res = await fetch('/api/roles/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ merchantId: tenantId, ...roleData })
+      });
+      return handleResponse(res);
+    },
+    async listStaff(tenantId: string) {
+      const res = await fetch(`/api/staff?tenantId=${tenantId}`);
+      return handleResponse(res);
+    },
+    async updateStaffRole(tenantId: string, staffId: string, roles: string[]) {
+      const res = await fetch(`/api/staff/${staffId}/update-role`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ merchantId: tenantId, roles })
+      });
+      return handleResponse(res);
+    },
+    async inviteStaff(tenantId: string, email: string, name: string, roles: string[]) {
+      const res = await fetch('/api/staff/invite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ merchantId: tenantId, email, name, roles })
+      });
+      return handleResponse(res);
+    }
+  },
+
+  // === Theme Designer Engine ===
+  themes: {
+    async list(tenantId: string) {
+      const res = await fetch(`/api/themes?tenantId=${tenantId}`);
+      return handleResponse(res);
+    },
+    async update(tenantId: string, themeId: string, config: any) {
+      const res = await fetch(`/api/themes/${themeId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ merchantId: tenantId, config })
+      });
+      return handleResponse(res);
+    },
+    async publish(tenantId: string, themeId: string) {
+      const res = await fetch(`/api/themes/${themeId}/publish`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ merchantId: tenantId })
+      });
+      return handleResponse(res);
+    }
+  },
+
+  // === Custom Webhooks & API Keys Gateway ===
+  webhooks: {
+    async list(tenantId: string) {
+      const res = await fetch(`/api/webhooks?tenantId=${tenantId}`);
+      const data = await handleResponse(res);
+      // Return registrations array if server wrapped it in { success: true, webhooks: [...] }
+      if (data && data.success && Array.isArray(data.webhooks)) {
+        return data.webhooks.map((w: any) => ({
+          id: w.id,
+          event: w.event,
+          targetUrl: w.targetUrl,
+          secret: `whsec_${w.id}_jwt`,
+          createdTime: (w.createdAt || '').substring(0, 16).replace('T', ' ')
+        }));
+      }
+      return data;
+    },
+    async register(tenantId: string, event: string, targetUrl: string) {
+      const res = await fetch('/api/webhooks/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ merchantId: tenantId, event, targetUrl })
+      });
+      return handleResponse(res);
+    },
+    async delete(tenantId: string, webhookId: string) {
+      const res = await fetch(`/api/webhooks/${webhookId}?tenantId=${tenantId}`, {
+        method: 'DELETE'
+      });
+      return handleResponse(res);
+    },
+    async testDispatch(tenantId: string, event: string) {
+      const res = await fetch('/api/webhooks/test-dispatch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ merchantId: tenantId, event })
+      });
+      return handleResponse(res);
+    },
+    async listApiKeys(tenantId: string) {
+      const res = await fetch(`/api/settings/api-keys?tenantId=${tenantId}`);
+      return handleResponse(res);
+    },
+    async createApiKey(tenantId: string, name: string) {
+      const res = await fetch('/api/settings/api-keys', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ merchantId: tenantId, name })
+      });
+      return handleResponse(res);
+    }
+  },
+
+  apiKeys: {
+    async list(tenantId: string) {
+      const res = await fetch(`/api/settings/api-keys?tenantId=${tenantId}`);
+      const data = await handleResponse(res);
+      if (data && data.success && Array.isArray(data.keys)) {
+        return data.keys.map((k: any) => ({
+          id: k.id,
+          token: k.apiKey,
+          role: k.name || 'staff',
+          rateLimit: k.name === 'admin' ? 120 : k.name === 'manager' ? 60 : 30,
+          createdTime: (k.createdAt || '').substring(0, 16).replace('T', ' ')
+        }));
+      }
+      return [];
+    },
+    async create(tenantId: string, role: string, rateLimit: number) {
+      const res = await fetch('/api/settings/api-keys', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ merchantId: tenantId, name: role })
+      });
+      const data = await handleResponse(res);
+      return { success: true, key: data.key };
+    },
+    async delete(tenantId: string, keyId: string) {
+      const res = await fetch(`/api/settings/api-keys/${keyId}?tenantId=${tenantId}`, {
+        method: 'DELETE'
+      });
+      return handleResponse(res);
+    }
   }
 };

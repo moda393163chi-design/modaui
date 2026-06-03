@@ -180,6 +180,136 @@ export interface DBAuditLog {
 }
 
 // Global schema container
+export interface DBAppInstallation {
+  id: string;
+  merchantId: string;
+  appId: string;
+  status: 'active' | 'paused' | 'pending' | 'failed';
+  config: Record<string, any>;
+  apiKey: string;
+  webhookSecret: string;
+  installedAt: string;
+  updatedAt: string;
+}
+
+export interface DBCampaign {
+  id: string;
+  merchantId: string;
+  name: string;
+  type: 'email' | 'sms' | 'push' | 'social';
+  status: 'draft' | 'scheduled' | 'running' | 'completed' | 'paused';
+  trigger: {
+    type: 'manual' | 'scheduled' | 'behavioral';
+    condition?: any;
+    schedule?: { startTime: string; frequency: 'once' | 'daily' | 'weekly' | 'monthly' };
+  };
+  audience: {
+    filters: Array<{ field: string; operator: string; value: any }>;
+    count: number;
+  };
+  content: {
+    subject?: string;
+    body: string;
+    cta?: { text: string; url: string };
+  };
+  performance: {
+    sent: number;
+    delivered: number;
+    opened: number;
+    clicked: number;
+    converted: number;
+    revenue: number;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DBCampaignAnalytics {
+  id: string;
+  campaignId: string;
+  sentCount: number;
+  openCount: number;
+  clickCount: number;
+  conversionCount: number;
+  revenue: number;
+  timestamp: string;
+}
+
+export interface DBChannelConnection {
+  id: string;
+  merchantId: string;
+  channel: 'tiktok' | 'xiaohongshu' | 'douyin' | 'taobao' | 'pinduoduo' | 'wechat' | 'instagram' | 'facebook';
+  status: 'connected' | 'disconnected' | 'error';
+  accessToken: string;
+  refreshToken?: string;
+  storeId: string;
+  config: Record<string, any>;
+  connectedAt: string;
+}
+
+export interface DBRole {
+  id: string;
+  name: string;
+  description: string;
+  permissions: string[];
+  merchantId: string;
+}
+
+export interface DBStaffPermission {
+  id: string;
+  merchantId: string;
+  email: string;
+  name: string;
+  roles: string[];
+  status: 'active' | 'inactive' | 'invited';
+}
+
+export interface DBTheme {
+  id: string;
+  merchantId: string;
+  name: string;
+  status: 'draft' | 'published' | 'archived';
+  config: {
+    colors: { primary: string; secondary: string; background: string; text: string };
+    fonts: { heading: string; body: string };
+    layout: { headerStyle: 'minimal' | 'standard' | 'luxury'; footerEnabled: boolean };
+  };
+  previewUrl: string;
+  publishedAt?: string;
+}
+
+export interface DBWebhookReg {
+  id: string;
+  merchantId: string;
+  event: string;
+  targetUrl: string;
+  active: boolean;
+  createdAt: string;
+}
+
+export interface DBWebhookLog {
+  id: string;
+  webhookId: string;
+  merchantId: string;
+  event: string;
+  targetUrl: string;
+  payload: string;
+  responseStatus: number;
+  responseBody: string;
+  timestamp: string;
+  success: boolean;
+}
+
+export interface DBAPIKey {
+  id: string;
+  merchantId: string;
+  name: string;
+  apiKey: string;
+  scopes: string[];
+  createdAt: string;
+  lastUsedAt?: string;
+}
+
 export interface DatabaseSchema {
   users: DBUser[];
   sessions: DBSession[];
@@ -196,6 +326,16 @@ export interface DatabaseSchema {
   agent_tasks: DBPendingAgentTask[];
   tenants: DBPartialTenantInfo[];
   audit_logs: DBAuditLog[];
+  appInstallations: DBAppInstallation[];
+  campaigns: DBCampaign[];
+  campaignAnalytics: DBCampaignAnalytics[];
+  channelConnections: DBChannelConnection[];
+  roles: DBRole[];
+  staffPermissions: DBStaffPermission[];
+  themes: DBTheme[];
+  webhookRegistrations: DBWebhookReg[];
+  webhookLogs: DBWebhookLog[];
+  apiKeys: DBAPIKey[];
 }
 
 export interface DBPartialTenantInfo {
@@ -224,6 +364,16 @@ const INITIAL_DATABASE: DatabaseSchema = {
   agent_tasks: [],
   tenants: [],
   audit_logs: [],
+  appInstallations: [],
+  campaigns: [],
+  campaignAnalytics: [],
+  channelConnections: [],
+  roles: [],
+  staffPermissions: [],
+  themes: [],
+  webhookRegistrations: [],
+  webhookLogs: [],
+  apiKeys: [],
 };
 
 // Safe atomic file operations
